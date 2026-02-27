@@ -12,7 +12,7 @@ import 'screens/main_shell.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  
+
   runApp(const OllamaDesktopApp());
 }
 
@@ -47,10 +47,25 @@ class OllamaDesktopApp extends StatelessWidget {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6B4EFF),
+        seedColor: const Color(0xFF5E35B1), // Deep Purple
         brightness: Brightness.light,
+        surface: const Color(0xFFF8F9FA),
+        background: const Color(0xFFF1F3F5),
       ),
-      textTheme: GoogleFonts.interTextTheme(),
+      scaffoldBackgroundColor: const Color(0xFFF1F3F5),
+      textTheme: GoogleFonts.outfitTextTheme(),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        ),
+      ),
     );
   }
 
@@ -58,13 +73,26 @@ class OllamaDesktopApp extends StatelessWidget {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6B4EFF),
+        seedColor: const Color(0xFF7C4DFF), // Vibrant Purple
         brightness: Brightness.dark,
-        surface: const Color(0xFF0F0F1A),
-        background: const Color(0xFF0A0A14),
+        surface: const Color(0xFF1E1E2C),
+        background: const Color(0xFF12121A),
       ),
-      scaffoldBackgroundColor: const Color(0xFF0A0A14),
-      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+      scaffoldBackgroundColor: const Color(0xFF12121A),
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1E1E2C),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withOpacity(0.05)),
+        ),
+      ),
     );
   }
 }

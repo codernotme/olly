@@ -41,7 +41,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Expanded(flex: 3, child: _buildModelsPanel(theme, isDark)),
                 const SizedBox(width: 20),
-                Expanded(flex: 2, child: _buildQuickActionsPanel(theme, isDark)),
+                Expanded(
+                    flex: 2, child: _buildQuickActionsPanel(theme, isDark)),
               ],
             ),
             const SizedBox(height: 24),
@@ -80,8 +81,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _getStatusMessage(OllamaStatus status) => switch (status) {
         OllamaStatus.running => '✅ Ollama is running and ready to use',
-        OllamaStatus.stopped => '⚠️ Ollama is stopped — click the status badge to start',
-        OllamaStatus.notInstalled => '❌ Ollama is not installed — click to install',
+        OllamaStatus.stopped =>
+          '⚠️ Ollama is stopped — click the status badge to start',
+        OllamaStatus.notInstalled =>
+          '❌ Ollama is not installed — click to install',
         OllamaStatus.installing => '⏳ Installing Ollama...',
         OllamaStatus.checking => '🔍 Checking Ollama status...',
       };
@@ -94,25 +97,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Models',
             value: ollama.models.length.toString(),
             icon: Icons.model_training,
-            color: Colors.purple,
+            color: const Color(0xFF9C27B0), // Purple
+            bgColor: const Color(0xFFF3E5F5), // Light purple
+            darkBgColor: const Color(0xFF321946),
           ),
           _StatCard(
             label: 'Chats',
             value: chat.sessions.length.toString(),
-            icon: Icons.chat_bubble,
-            color: Colors.blue,
+            icon: Icons.chat_bubble_rounded,
+            color: const Color(0xFF2196F3), // Blue
+            bgColor: const Color(0xFFE3F2FD), // Light blue
+            darkBgColor: const Color(0xFF132B4C),
           ),
           _StatCard(
             label: 'Agents',
             value: agents.agents.length.toString(),
-            icon: Icons.smart_toy,
-            color: Colors.green,
+            icon: Icons.smart_toy_rounded,
+            color: const Color(0xFF00E676), // Green
+            bgColor: const Color(0xFFE8F5E9), // Light green
+            darkBgColor: const Color(0xFF1B3B2B),
           ),
           _StatCard(
             label: 'Running',
             value: ollama.runningModels.length.toString(),
-            icon: Icons.play_circle,
-            color: Colors.orange,
+            icon: Icons.play_circle_fill_rounded,
+            color: const Color(0xFFFF9800), // Orange
+            bgColor: const Color(0xFFFFF3E0), // Light orange
+            darkBgColor: const Color(0xFF4C3011),
           ),
         ];
 
@@ -120,7 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: stats
               .map((s) => Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 16),
+                      padding: const EdgeInsets.only(right: 20),
                       child: _buildStatCard(s, theme),
                     ),
                   ))
@@ -133,33 +144,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildStatCard(_StatCard stat, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? theme.colorScheme.surface : Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: stat.color.withOpacity(0.2),
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.03),
         ),
         boxShadow: isDark
-            ? null
+            ? [
+                BoxShadow(
+                  color: stat.color.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ]
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: stat.color.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
               ],
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: stat.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? stat.darkBgColor : stat.bgColor,
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(stat.icon, color: stat.color, size: 24),
+            child: Icon(stat.icon, color: stat.color, size: 26),
           ),
           const SizedBox(width: 16),
           Column(
@@ -169,13 +188,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 stat.value,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: stat.color,
+                  color: theme.colorScheme.onSurface,
+                  height: 1.1,
                 ),
               ),
               Text(
                 stat.label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -197,12 +219,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: ollama.fetchModels,
           ),
           child: ollama.models.isEmpty
-              ? _buildEmptyState('No models installed', 'Pull models from the Models tab', Icons.model_training)
+              ? _buildEmptyState('No models installed',
+                  'Pull models from the Models tab', Icons.model_training)
               : Column(
                   children: ollama.models.take(6).map((model) {
                     final isSelected = model.name == ollama.selectedModel;
                     final isRunning = ollama.runningModels.contains(model.name);
-                    return _buildModelTile(model, isSelected, isRunning, ollama, theme);
+                    return _buildModelTile(
+                        model, isSelected, isRunning, ollama, theme);
                   }).toList(),
                 ),
         );
@@ -210,7 +234,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildModelTile(OllamaModel model, bool isSelected, bool isRunning, OllamaProvider ollama, ThemeData theme) {
+  Widget _buildModelTile(OllamaModel model, bool isSelected, bool isRunning,
+      OllamaProvider ollama, ThemeData theme) {
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -229,7 +254,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Center(
           child: Text(
             model.displayName[0].toUpperCase(),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
       ),
@@ -239,7 +265,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       subtitle: Text(
         '${model.tag} • ${model.size}',
-        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        style: TextStyle(
+            fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -251,11 +278,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: Colors.green.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text('Running', style: TextStyle(fontSize: 10, color: Colors.green)),
+              child: const Text('Running',
+                  style: TextStyle(fontSize: 10, color: Colors.green)),
             ),
           if (isSelected) ...[
             const SizedBox(width: 4),
-            Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 16),
+            Icon(Icons.check_circle,
+                color: theme.colorScheme.primary, size: 16),
           ],
         ],
       ),
@@ -326,10 +355,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 12),
                 Text(
                   label,
-                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: 13),
                 ),
                 const Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.arrow_forward_ios,
+                    size: 12, color: Colors.grey.withOpacity(0.5)),
               ],
             ),
           ),
@@ -346,21 +377,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
           isDark: isDark,
           title: 'Recent Chats',
           child: chat.sessions.isEmpty
-              ? _buildEmptyState('No chats yet', 'Start a conversation in the Chat tab', Icons.chat_bubble_outline)
+              ? _buildEmptyState(
+                  'No chats yet',
+                  'Start a conversation in the Chat tab',
+                  Icons.chat_bubble_outline)
               : Column(
                   children: chat.sessions.take(5).map((session) {
                     return ListTile(
                       dense: true,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                      leading: Icon(Icons.chat_bubble_outline, size: 18, color: theme.colorScheme.primary),
+                      leading: Icon(Icons.chat_bubble_outline,
+                          size: 18, color: theme.colorScheme.primary),
                       title: Text(
                         session.title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w500),
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
                         '${session.messages.length} messages • ${_formatDate(session.updatedAt)}',
-                        style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.5)),
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 12),
                     );
@@ -386,7 +425,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
         boxShadow: isDark
             ? null
-            : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+            : [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2))
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,7 +439,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 title,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               if (trailing != null) trailing,
@@ -416,9 +461,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(icon, size: 40, color: Colors.grey.withOpacity(0.4)),
             const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey)),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, color: Colors.grey)),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey), textAlign: TextAlign.center),
+            Text(subtitle,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -439,5 +488,14 @@ class _StatCard {
   final String value;
   final IconData icon;
   final Color color;
-  const _StatCard({required this.label, required this.value, required this.icon, required this.color});
+  final Color bgColor;
+  final Color darkBgColor;
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.bgColor = Colors.transparent,
+    this.darkBgColor = Colors.transparent,
+  });
 }

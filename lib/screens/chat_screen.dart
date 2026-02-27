@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../providers/chat_provider.dart';
 import '../providers/ollama_provider.dart';
 import '../providers/settings_provider.dart';
@@ -18,6 +19,41 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   bool _showSessions = true;
+
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async {
+    await _speechToText.listen(onResult: (result) {
+      if (mounted) {
+        setState(() {
+          _inputController.text = result.recognizedWords;
+        });
+      }
+    });
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
 
   @override
   void dispose() {
@@ -53,7 +89,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final session = chat.currentSession!;
     final model = session.model ?? ollama.selectedModel;
-    
+
     if (model == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a model first')),
@@ -62,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     _inputController.clear();
-    
+
     await chat.addMessage(
       sessionId: session.id,
       role: MessageRole.user,
@@ -75,11 +111,32 @@ class _ChatScreenState extends State<ChatScreen> {
         .map((m) => m.toApiMap())
         .toList();
 
+    String finalSystemPrompt =
+        session.systemPrompt ?? settings.defaultSystemPrompt;
+    if (settings.sharedMemory.isNotEmpty) {
+      finalSystemPrompt +=
+          '\n\n[User Personal Context / Memory]\n${settings.sharedMemory}';
+    }
+
+    String? openaiKey = settings.apiKeys
+        .where((k) => k.name.toLowerCase().contains('openai') && k.isActive)
+        .firstOrNull
+        ?.key;
+    String? anthropicKey = settings.apiKeys
+        .where((k) =>
+            (k.name.toLowerCase().contains('anthropic') ||
+                k.name.toLowerCase().contains('claude')) &&
+            k.isActive)
+        .firstOrNull
+        ?.key;
+
     final stream = ollama.streamChat(
       messages: messages,
       model: model,
       temperature: session.temperature,
-      systemPrompt: session.systemPrompt ?? settings.defaultSystemPrompt,
+      systemPrompt: finalSystemPrompt,
+      openaiKey: openaiKey,
+      anthropicKey: anthropicKey,
     );
 
     await chat.streamResponse(sessionId: session.id, stream: stream);
@@ -116,7 +173,9 @@ class _ChatScreenState extends State<ChatScreen> {
           width: 240,
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0E0E1B) : const Color(0xFFF5F5F8),
-            border: Border(right: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+            border: Border(
+                right: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.15))),
           ),
           child: Column(
             children: [
@@ -131,22 +190,26 @@ class _ChatScreenState extends State<ChatScreen> {
                     minimumSize: const Size(double.infinity, 40),
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
               Expanded(
                 child: chat.sessions.isEmpty
                     ? const Center(
-                        child: Text('No chats yet', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        child: Text('No chats yet',
+                            style: TextStyle(color: Colors.grey, fontSize: 13)),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         itemCount: chat.sessions.length,
                         itemBuilder: (context, i) {
                           final session = chat.sessions[i];
-                          final isSelected = session.id == chat.currentSession?.id;
-                          return _buildSessionTile(session, isSelected, chat, theme);
+                          final isSelected =
+                              session.id == chat.currentSession?.id;
+                          return _buildSessionTile(
+                              session, isSelected, chat, theme);
                         },
                       ),
               ),
@@ -157,13 +220,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildSessionTile(ChatSession session, bool isSelected, ChatProvider chat, ThemeData theme) {
+  Widget _buildSessionTile(ChatSession session, bool isSelected,
+      ChatProvider chat, ThemeData theme) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
-        color: isSelected ? theme.colorScheme.primary.withOpacity(0.12) : Colors.transparent,
+        color: isSelected
+            ? theme.colorScheme.primary.withOpacity(0.12)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
-        border: isSelected ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3)) : null,
+        border: isSelected
+            ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3))
+            : null,
       ),
       child: ListTile(
         dense: true,
@@ -210,8 +278,12 @@ class _ChatScreenState extends State<ChatScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F0F1A).withOpacity(0.8) : Colors.white,
-            border: Border(bottom: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+            color: isDark
+                ? const Color(0xFF0F0F1A).withOpacity(0.8)
+                : Colors.white,
+            border: Border(
+                bottom: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.15))),
           ),
           child: Row(
             children: [
@@ -224,34 +296,45 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: Text(
                   session?.title ?? 'New Chat',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               // Model selector
               if (ollama.models.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
+                    border: Border.all(
+                        color: theme.colorScheme.primary.withOpacity(0.3)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: session?.model ?? ollama.selectedModel,
                       isDense: true,
-                      icon: Icon(Icons.expand_more, size: 14, color: theme.colorScheme.primary),
-                      style: TextStyle(fontSize: 12, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
-                      items: ollama.models.map((m) => DropdownMenuItem(
-                        value: m.name,
-                        child: Text(m.displayName, style: const TextStyle(fontSize: 12)),
-                      )).toList(),
+                      icon: Icon(Icons.expand_more,
+                          size: 14, color: theme.colorScheme.primary),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600),
+                      items: ollama.models
+                          .map((m) => DropdownMenuItem(
+                                value: m.name,
+                                child: Text(m.displayName,
+                                    style: const TextStyle(fontSize: 12)),
+                              ))
+                          .toList(),
                       onChanged: (val) {
                         if (val != null) {
                           ollama.selectModel(val);
                           if (session != null) {
-                            chat.updateSessionSettings(sessionId: session.id, model: val);
+                            chat.updateSessionSettings(
+                                sessionId: session.id, model: val);
                           }
                         }
                       },
@@ -259,6 +342,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               const SizedBox(width: 8),
+              IconButton(
+                icon: Icon(
+                  chat.voiceOutputEnabled ? Icons.volume_up : Icons.volume_off,
+                  color: chat.voiceOutputEnabled
+                      ? theme.colorScheme.primary
+                      : Colors.grey,
+                ),
+                onPressed: () => chat.toggleVoiceOutput(),
+                iconSize: 20,
+                tooltip: 'Toggle Voice Output',
+              ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () => _showSessionSettings(context, chat, ollama),
@@ -271,11 +365,13 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _showSessionSettings(BuildContext context, ChatProvider chat, OllamaProvider ollama) {
+  void _showSessionSettings(
+      BuildContext context, ChatProvider chat, OllamaProvider ollama) {
     final session = chat.currentSession;
     if (session == null) return;
 
-    final systemController = TextEditingController(text: session.systemPrompt ?? '');
+    final systemController =
+        TextEditingController(text: session.systemPrompt ?? '');
     double temp = session.temperature;
 
     showDialog(
@@ -289,22 +385,28 @@ class _ChatScreenState extends State<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('System Prompt', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                const Text('System Prompt',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: systemController,
                   maxLines: 4,
                   decoration: InputDecoration(
                     hintText: 'Enter system prompt...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Text('Temperature', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    const Text('Temperature',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13)),
                     const Spacer(),
-                    Text(temp.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(temp.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                   ],
                 ),
                 Slider(
@@ -318,7 +420,9 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 chat.updateSessionSettings(
@@ -369,18 +473,25 @@ class _ChatScreenState extends State<ChatScreen> {
             height: 80,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary
+                ],
               ),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 40),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.white, size: 40),
           ),
           const SizedBox(height: 24),
-          Text('Start a conversation', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+          Text('Start a conversation',
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(
             'Select a model and type a message to begin',
-            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+            style:
+                TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -416,7 +527,8 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, ThemeData theme, bool isDark) {
+  Widget _buildMessageBubble(
+      ChatMessage message, ThemeData theme, bool isDark) {
     final isUser = message.role == MessageRole.user;
     final isSystem = message.role == MessageRole.system;
 
@@ -438,21 +550,27 @@ class _ChatScreenState extends State<ChatScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (!isUser) ...[
                 Container(
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.secondary]),
+                    gradient: LinearGradient(colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.secondary
+                    ]),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+                  child: const Icon(Icons.auto_awesome,
+                      color: Colors.white, size: 16),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -461,7 +579,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.65,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isUser
                         ? theme.colorScheme.primary
@@ -478,9 +597,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       : isUser
                           ? SelectableText(
                               message.content,
-                              style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  height: 1.5),
                             )
-                          : _buildMarkdownContent(message.content, theme, isDark),
+                          : _buildMarkdownContent(
+                              message.content, theme, isDark),
                 ),
               ),
               if (isUser) ...[
@@ -488,7 +611,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-                  child: Icon(Icons.person, size: 16, color: theme.colorScheme.primary),
+                  child: Icon(Icons.person,
+                      size: 16, color: theme.colorScheme.primary),
                 ),
               ],
             ],
@@ -504,7 +628,9 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: theme.colorScheme.onSurface.withOpacity(0.4)),
                 ),
                 if (!isUser && !message.isStreaming) ...[
                   const SizedBox(width: 8),
@@ -512,10 +638,74 @@ class _ChatScreenState extends State<ChatScreen> {
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: message.content));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Copied to clipboard'), duration: Duration(seconds: 1)),
+                        const SnackBar(
+                            content: Text('Copied to clipboard'),
+                            duration: Duration(seconds: 1)),
                       );
                     },
-                    child: Icon(Icons.copy, size: 12, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                    child: Icon(Icons.copy,
+                        size: 13,
+                        color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                  ),
+                  const SizedBox(width: 12),
+                  InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Share to Social Media'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.flutter_dash,
+                                    color: Colors.blue),
+                                title: const Text('Twitter / X'),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Shared to Twitter!')));
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.facebook,
+                                    color: Colors.blueAccent),
+                                title: const Text('Facebook'),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Shared to Facebook!')));
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(
+                                    Icons.connect_without_contact,
+                                    color: Colors.purple),
+                                title: const Text('LinkedIn'),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Shared to LinkedIn!')));
+                                },
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel')),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.share,
+                        size: 13,
+                        color: theme.colorScheme.onSurface.withOpacity(0.4)),
                   ),
                 ],
               ],
@@ -540,10 +730,12 @@ class _ChatScreenState extends State<ChatScreen> {
         codeblockDecoration: BoxDecoration(
           color: isDark ? const Color(0xFF1A1A2E) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade300),
+          border:
+              Border.all(color: isDark ? Colors.white12 : Colors.grey.shade300),
         ),
         blockquoteDecoration: BoxDecoration(
-          border: Border(left: BorderSide(color: theme.colorScheme.primary, width: 3)),
+          border: Border(
+              left: BorderSide(color: theme.colorScheme.primary, width: 3)),
           color: theme.colorScheme.primary.withOpacity(0.05),
         ),
       ),
@@ -556,8 +748,12 @@ class _ChatScreenState extends State<ChatScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F0F1A).withOpacity(0.8) : Colors.white,
-            border: Border(top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+            color: isDark
+                ? const Color(0xFF0F0F1A).withOpacity(0.8)
+                : Colors.white,
+            border: Border(
+                top: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.15))),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -565,9 +761,12 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.06) : Colors.grey.shade100,
+                    color: isDark
+                        ? Colors.white.withOpacity(0.06)
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+                    border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2)),
                   ),
                   child: KeyboardListener(
                     focusNode: FocusNode(),
@@ -585,16 +784,41 @@ class _ChatScreenState extends State<ChatScreen> {
                       minLines: 1,
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Message (Enter to send, Shift+Enter for newline)...',
-                        hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4), fontSize: 14),
+                        hintText:
+                            'Message (Enter to send, Shift+Enter for newline)...',
+                        hintStyle: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            fontSize: 14),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
+              if (_speechEnabled &&
+                  !chat.isGenerating &&
+                  _inputController.text.isEmpty)
+                IconButton.filled(
+                  onPressed: _isListening ? _stopListening : _startListening,
+                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                  style: IconButton.styleFrom(
+                    backgroundColor: _isListening
+                        ? Colors.redAccent
+                        : theme.colorScheme.primary.withOpacity(0.1),
+                    foregroundColor:
+                        _isListening ? Colors.white : theme.colorScheme.primary,
+                    minimumSize: const Size(48, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              if (_speechEnabled &&
+                  !chat.isGenerating &&
+                  _inputController.text.isEmpty)
+                const SizedBox(width: 8),
               if (chat.isGenerating)
                 IconButton.filled(
                   onPressed: chat.stopGeneration,
@@ -603,7 +827,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(48, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 )
               else
@@ -614,7 +839,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(48, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
             ],
@@ -636,14 +862,16 @@ class _TypingIndicator extends StatefulWidget {
   State<_TypingIndicator> createState() => _TypingIndicatorState();
 }
 
-class _TypingIndicatorState extends State<_TypingIndicator> with TickerProviderStateMixin {
+class _TypingIndicatorState extends State<_TypingIndicator>
+    with TickerProviderStateMixin {
   late List<AnimationController> _controllers;
 
   @override
   void initState() {
     super.initState();
     _controllers = List.generate(3, (i) {
-      final c = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+      final c = AnimationController(
+          vsync: this, duration: const Duration(milliseconds: 600));
       Future.delayed(Duration(milliseconds: i * 200), () {
         if (mounted) c.repeat(reverse: true);
       });

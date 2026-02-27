@@ -28,7 +28,8 @@ class OllamaModel {
       name: json['name'] ?? '',
       size: sizeStr,
       digest: json['digest'] ?? '',
-      modifiedAt: DateTime.tryParse(json['modified_at'] ?? '') ?? DateTime.now(),
+      modifiedAt:
+          DateTime.tryParse(json['modified_at'] ?? '') ?? DateTime.now(),
       details: json['details'] ?? {},
     );
   }
@@ -36,7 +37,8 @@ class OllamaModel {
   static String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
@@ -72,7 +74,36 @@ class OllamaProvider extends ChangeNotifier {
   Map<String, dynamic> _systemInfo = {};
 
   OllamaStatus get status => _status;
-  List<OllamaModel> get models => _models;
+  List<OllamaModel> get models {
+    return [
+      ..._models,
+      OllamaModel(
+          name: 'gpt-4-turbo',
+          size: 'API',
+          digest: '',
+          modifiedAt: DateTime.now(),
+          details: {}),
+      OllamaModel(
+          name: 'gpt-3.5-turbo',
+          size: 'API',
+          digest: '',
+          modifiedAt: DateTime.now(),
+          details: {}),
+      OllamaModel(
+          name: 'claude-3-opus-20240229',
+          size: 'API',
+          digest: '',
+          modifiedAt: DateTime.now(),
+          details: {}),
+      OllamaModel(
+          name: 'claude-3-sonnet-20240229',
+          size: 'API',
+          digest: '',
+          modifiedAt: DateTime.now(),
+          details: {}),
+    ];
+  }
+
   String? get selectedModel => _selectedModel;
   String get baseUrl => _baseUrl;
   bool get isLoading => _isLoading;
@@ -133,7 +164,7 @@ class OllamaProvider extends ChangeNotifier {
       final data = jsonDecode(body);
       final modelsList = data['models'] as List? ?? [];
       _models = modelsList.map((m) => OllamaModel.fromJson(m)).toList();
-      
+
       if (_selectedModel == null && _models.isNotEmpty) {
         _selectedModel = _models.first.name;
       }
@@ -170,8 +201,10 @@ class OllamaProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> pullModel(String modelName, {Function(PullProgress)? onProgress}) async {
-    _pullProgress[modelName] = PullProgress(status: 'Starting...', completed: 0, total: 0);
+  Future<void> pullModel(String modelName,
+      {Function(PullProgress)? onProgress}) async {
+    _pullProgress[modelName] =
+        PullProgress(status: 'Starting...', completed: 0, total: 0);
     notifyListeners();
 
     try {
@@ -180,8 +213,10 @@ class OllamaProvider extends ChangeNotifier {
       request.body = jsonEncode({'name': modelName, 'stream': true});
 
       final response = await request.send();
-      
-      await for (final chunk in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+
+      await for (final chunk in response.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
         if (chunk.isEmpty) continue;
         try {
           final data = jsonDecode(chunk);
@@ -228,7 +263,8 @@ class OllamaProvider extends ChangeNotifier {
 
   void selectModel(String model) {
     _selectedModel = model;
-    SharedPreferences.getInstance().then((p) => p.setString('selected_model', model));
+    SharedPreferences.getInstance()
+        .then((p) => p.setString('selected_model', model));
     notifyListeners();
   }
 
@@ -240,7 +276,8 @@ class OllamaProvider extends ChangeNotifier {
 
   String _randomSuffix() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    return List.generate(16, (i) => chars[DateTime.now().microsecond % chars.length]).join();
+    return List.generate(
+        16, (i) => chars[DateTime.now().microsecond % chars.length]).join();
   }
 
   Future<Map<String, dynamic>> getModelInfo(String modelName) async {
@@ -275,7 +312,8 @@ class OllamaProvider extends ChangeNotifier {
       if (Platform.isMacOS) {
         await Process.run('brew', ['install', 'ollama']);
       } else if (Platform.isLinux) {
-        await Process.run('bash', ['-c', 'curl -fsSL https://ollama.com/install.sh | sh']);
+        await Process.run(
+            'bash', ['-c', 'curl -fsSL https://ollama.com/install.sh | sh']);
       }
       await checkStatus();
     } catch (e) {
@@ -299,7 +337,20 @@ class OllamaProvider extends ChangeNotifier {
     double temperature = 0.7,
     int maxTokens = 2048,
     String? systemPrompt,
+    String? openaiKey,
+    String? anthropicKey,
   }) async* {
+    if (model.startsWith('gpt-')) {
+      yield* _streamOpenAI(
+          messages, model, temperature, maxTokens, systemPrompt, openaiKey);
+      return;
+    }
+    if (model.startsWith('claude-')) {
+      yield* _streamAnthropic(
+          messages, model, temperature, maxTokens, systemPrompt, anthropicKey);
+      return;
+    }
+
     final allMessages = <Map<String, String>>[];
     if (systemPrompt != null) {
       allMessages.add({'role': 'system', 'content': systemPrompt});
@@ -320,8 +371,10 @@ class OllamaProvider extends ChangeNotifier {
       });
 
       final response = await request.send();
-      
-      await for (final chunk in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+
+      await for (final chunk in response.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
         if (chunk.isEmpty) continue;
         try {
           final data = jsonDecode(chunk);
@@ -334,6 +387,99 @@ class OllamaProvider extends ChangeNotifier {
       }
     } catch (e) {
       yield '\n\n[Error: $e]';
+    }
+  }
+
+  Stream<String> _streamOpenAI(List<Map<String, String>> messages, String model,
+      double temp, int maxTokens, String? sysPrompt, String? apiKey) async* {
+    if (apiKey == null || apiKey.isEmpty) {
+      yield 'Error: OpenAI API Key not configured in Settings -> API Keys pane.';
+      return;
+    }
+    final allMessages = <Map<String, String>>[];
+    if (sysPrompt != null)
+      allMessages.add({'role': 'system', 'content': sysPrompt});
+    allMessages.addAll(messages);
+
+    try {
+      final req = http.Request(
+          'POST', Uri.parse('https://api.openai.com/v1/chat/completions'));
+      req.headers.addAll({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey'
+      });
+      req.body = jsonEncode({
+        'model': model,
+        'messages': allMessages,
+        'temperature': temp,
+        'max_tokens': maxTokens,
+        'stream': true
+      });
+      final res = await req.send();
+      await for (final line in res.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (line.isEmpty || !line.startsWith('data: ')) continue;
+        final data = line.substring(6);
+        if (data == '[DONE]') break;
+        try {
+          final json = jsonDecode(data);
+          final content = json['choices'][0]['delta']['content'] as String?;
+          if (content != null) yield content;
+        } catch (_) {}
+      }
+    } catch (e) {
+      yield '\n\n[OpenAI Error: $e]';
+    }
+  }
+
+  Stream<String> _streamAnthropic(
+      List<Map<String, String>> messages,
+      String model,
+      double temp,
+      int maxTokens,
+      String? sysPrompt,
+      String? apiKey) async* {
+    if (apiKey == null || apiKey.isEmpty) {
+      yield 'Error: Anthropic API Key not configured in Settings -> API Keys pane.';
+      return;
+    }
+
+    // Convert to Claude format
+    final sys = sysPrompt ?? 'You are a helpful assistant.';
+
+    try {
+      final req = http.Request(
+          'POST', Uri.parse('https://api.anthropic.com/v1/messages'));
+      req.headers.addAll({
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      });
+      req.body = jsonEncode({
+        'model': model,
+        'max_tokens': maxTokens,
+        'temperature': temp,
+        'system': sys,
+        'messages': messages,
+        'stream': true
+      });
+      final res = await req.send();
+      await for (final line in res.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (line.isEmpty || !line.startsWith('data: ')) continue;
+        final data = line.substring(6);
+        try {
+          final json = jsonDecode(data);
+          if (json['type'] == 'content_block_delta') {
+            final text = json['delta']['text'] as String?;
+            if (text != null) yield text;
+          }
+        } catch (_) {}
+      }
+    } catch (e) {
+      yield '\n\n[Anthropic Error: $e]';
     }
   }
 

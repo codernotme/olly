@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/ollama_provider.dart';
-import '../providers/chat_provider.dart';
 import 'chat_screen.dart';
 import 'models_screen.dart';
 import 'agents_screen.dart';
 import 'api_keys_screen.dart';
 import 'settings_screen.dart';
 import 'dashboard_screen.dart';
+import 'editor_screen.dart';
+import 'bots_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -24,6 +25,8 @@ class _MainShellState extends State<MainShell> {
     ChatScreen(),
     ModelsScreen(),
     AgentsScreen(),
+    EditorScreen(),
+    BotsScreen(),
     ApiKeysScreen(),
     SettingsScreen(),
   ];
@@ -33,6 +36,8 @@ class _MainShellState extends State<MainShell> {
     _NavItem(icon: Icons.chat_bubble_rounded, label: 'Chat'),
     _NavItem(icon: Icons.model_training_rounded, label: 'Models'),
     _NavItem(icon: Icons.smart_toy_rounded, label: 'Agents'),
+    _NavItem(icon: Icons.code_rounded, label: 'Code Editor'),
+    _NavItem(icon: Icons.chat, label: 'Bots'),
     _NavItem(icon: Icons.key_rounded, label: 'API Keys'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
   ];
@@ -41,7 +46,7 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: Row(
         children: [
@@ -58,26 +63,37 @@ class _MainShellState extends State<MainShell> {
 
   Widget _buildSidebar(ThemeData theme, bool isDark) {
     final sidebarColor = isDark
-        ? const Color(0xFF12121F)
-        : const Color(0xFFF8F7FF);
+        ? const Color(0xFF1E1E2C).withOpacity(0.85) // Translucent dark
+        : const Color(0xFFFFFFFF).withOpacity(0.9); // Translucent light
     final selectedColor = theme.colorScheme.primary;
 
     return Consumer<OllamaProvider>(
       builder: (context, ollama, _) {
         return Container(
-          width: 220,
-          color: sidebarColor,
+          width: 240, // Slightly wider
+          decoration: BoxDecoration(
+            color: sidebarColor,
+            border: Border(
+              right: BorderSide(
+                color: isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.05),
+                width: 1,
+              ),
+            ),
+          ),
           child: Column(
             children: [
               // Logo / App header
               _buildHeader(theme, isDark),
               // Status indicator
               _buildStatusBadge(ollama, theme),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               // Navigation items
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: _navItems.length,
                   itemBuilder: (context, index) {
                     final item = _navItems[index];
@@ -94,7 +110,7 @@ class _MainShellState extends State<MainShell> {
               ),
               // Model selector at bottom
               _buildModelSelector(theme, isDark),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
             ],
           ),
         );
@@ -104,12 +120,12 @@ class _MainShellState extends State<MainShell> {
 
   Widget _buildHeader(ThemeData theme, bool isDark) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -119,27 +135,31 @@ class _MainShellState extends State<MainShell> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                )
+              ],
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Ollama',
+                'Olly',
                 style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
                   color: theme.colorScheme.onSurface,
-                ),
-              ),
-              Text(
-                'Desktop',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
                   letterSpacing: 1.2,
                 ),
               ),
@@ -152,11 +172,27 @@ class _MainShellState extends State<MainShell> {
 
   Widget _buildStatusBadge(OllamaProvider ollama, ThemeData theme) {
     final (color, label, icon) = switch (ollama.status) {
-      OllamaStatus.running => (Colors.green, 'Running', Icons.circle),
-      OllamaStatus.stopped => (Colors.orange, 'Stopped', Icons.circle),
-      OllamaStatus.notInstalled => (Colors.red, 'Not Installed', Icons.circle),
-      OllamaStatus.installing => (Colors.blue, 'Installing...', Icons.circle),
-      OllamaStatus.checking => (Colors.grey, 'Checking...', Icons.circle),
+      OllamaStatus.running => (
+          Colors.greenAccent.shade400,
+          'Running',
+          Icons.check_circle_rounded
+        ),
+      OllamaStatus.stopped => (
+          Colors.orangeAccent,
+          'Stopped',
+          Icons.pause_circle_rounded
+        ),
+      OllamaStatus.notInstalled => (
+          Colors.redAccent,
+          'Not Installed',
+          Icons.error_rounded
+        ),
+      OllamaStatus.installing => (
+          Colors.lightBlueAccent,
+          'Installing...',
+          Icons.download_rounded
+        ),
+      OllamaStatus.checking => (Colors.grey, 'Checking...', Icons.sync_rounded),
     };
 
     return GestureDetector(
@@ -166,29 +202,30 @@ class _MainShellState extends State<MainShell> {
         if (ollama.status == OllamaStatus.running) ollama.checkStatus();
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.4)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 8),
-            const SizedBox(width: 8),
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Ollama: $label',
+                label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: color,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            if (ollama.status == OllamaStatus.stopped || ollama.status == OllamaStatus.notInstalled)
-              Icon(Icons.play_arrow, color: color, size: 16),
+            if (ollama.status == OllamaStatus.stopped ||
+                ollama.status == OllamaStatus.notInstalled)
+              Icon(Icons.play_arrow_rounded, color: color, size: 18),
           ],
         ),
       ),
@@ -203,46 +240,45 @@ class _MainShellState extends State<MainShell> {
     required VoidCallback onTap,
   }) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      margin: const EdgeInsets.symmetric(vertical: 2),
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
+          hoverColor: selectedColor.withOpacity(0.05),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? selectedColor.withOpacity(0.15)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-              border: isSelected
-                  ? Border.all(color: selectedColor.withOpacity(0.3))
-                  : null,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 Icon(
                   item.icon,
-                  size: 20,
+                  size: 22,
                   color: isSelected
                       ? selectedColor
                       : isDark
                           ? Colors.white54
-                          : Colors.black45,
+                          : Colors.black54,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 16),
                 Text(
                   item.label,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
                         ? selectedColor
                         : isDark
                             ? Colors.white70
-                            : Colors.black54,
+                            : Colors.black87,
                   ),
                 ),
               ],
@@ -257,7 +293,7 @@ class _MainShellState extends State<MainShell> {
     return Consumer<OllamaProvider>(
       builder: (context, ollama, _) {
         if (ollama.models.isEmpty) return const SizedBox.shrink();
-        
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 12),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -271,7 +307,8 @@ class _MainShellState extends State<MainShell> {
             child: DropdownButton<String>(
               value: ollama.selectedModel,
               isExpanded: true,
-              icon: Icon(Icons.expand_more, size: 16, color: theme.colorScheme.primary),
+              icon: Icon(Icons.expand_more,
+                  size: 16, color: theme.colorScheme.primary),
               style: TextStyle(
                 fontSize: 12,
                 color: theme.colorScheme.onSurface,

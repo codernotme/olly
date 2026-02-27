@@ -51,6 +51,7 @@ class SettingsProvider extends ChangeNotifier {
   String _ollamaBaseUrl = 'http://localhost:11434';
   bool _autoSaveChats = true;
   String _fontFamily = 'Inter';
+  String _sharedMemory = '';
 
   ThemeMode get themeMode => _themeMode;
   bool get streamingEnabled => _streamingEnabled;
@@ -63,6 +64,7 @@ class SettingsProvider extends ChangeNotifier {
   String get ollamaBaseUrl => _ollamaBaseUrl;
   bool get autoSaveChats => _autoSaveChats;
   String get fontFamily => _fontFamily;
+  String get sharedMemory => _sharedMemory;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -73,9 +75,11 @@ class SettingsProvider extends ChangeNotifier {
     _defaultSystemPrompt = prefs.getString('default_system_prompt') ?? '';
     _defaultTemperature = prefs.getDouble('default_temperature') ?? 0.7;
     _defaultMaxTokens = prefs.getInt('default_max_tokens') ?? 2048;
-    _ollamaBaseUrl = prefs.getString('ollama_base_url') ?? 'http://localhost:11434';
+    _ollamaBaseUrl =
+        prefs.getString('ollama_base_url') ?? 'http://localhost:11434';
     _autoSaveChats = prefs.getBool('auto_save_chats') ?? true;
     _fontFamily = prefs.getString('font_family') ?? 'Inter';
+    _sharedMemory = prefs.getString('shared_memory') ?? '';
 
     try {
       final keysJson = prefs.getString('api_keys');
@@ -100,6 +104,7 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString('ollama_base_url', _ollamaBaseUrl);
     await prefs.setBool('auto_save_chats', _autoSaveChats);
     await prefs.setString('font_family', _fontFamily);
+    await prefs.setString('shared_memory', _sharedMemory);
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -144,6 +149,12 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSharedMemory(String val) {
+    _sharedMemory = val;
+    _save();
+    notifyListeners();
+  }
+
   ApiKey addApiKey(String name, String key) {
     final apiKey = ApiKey(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -174,6 +185,7 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> _saveApiKeys() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('api_keys', jsonEncode(_apiKeys.map((k) => k.toJson()).toList()));
+    await prefs.setString(
+        'api_keys', jsonEncode(_apiKeys.map((k) => k.toJson()).toList()));
   }
 }

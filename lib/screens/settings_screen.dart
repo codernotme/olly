@@ -13,6 +13,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _urlController = TextEditingController();
   final _systemPromptController = TextEditingController();
+  final _memoryController = TextEditingController();
 
   @override
   void initState() {
@@ -20,12 +21,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settings = context.read<SettingsProvider>();
     _urlController.text = settings.ollamaBaseUrl;
     _systemPromptController.text = settings.defaultSystemPrompt;
+    _memoryController.text = settings.sharedMemory;
   }
 
   @override
   void dispose() {
     _urlController.dispose();
     _systemPromptController.dispose();
+    _memoryController.dispose();
     super.dispose();
   }
 
@@ -43,10 +46,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Settings', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+                Text('Settings',
+                    style: theme.textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 4),
                 Text('Configure your Ollama Desktop experience',
-                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                    style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 const SizedBox(height: 32),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +149,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Icon(icon, size: 18, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
-              Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              Text(title,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700)),
             ],
           ),
           const SizedBox(height: 16),
@@ -153,26 +161,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeSetting(SettingsProvider settings, ThemeData theme, bool isDark) {
+  Widget _buildThemeSetting(
+      SettingsProvider settings, ThemeData theme, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Theme Mode', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const Text('Theme Mode',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         const SizedBox(height: 10),
         Row(
           children: [
-            _buildThemeOption('Light', Icons.light_mode, ThemeMode.light, settings, theme),
+            _buildThemeOption(
+                'Light', Icons.light_mode, ThemeMode.light, settings, theme),
             const SizedBox(width: 10),
-            _buildThemeOption('Dark', Icons.dark_mode, ThemeMode.dark, settings, theme),
+            _buildThemeOption(
+                'Dark', Icons.dark_mode, ThemeMode.dark, settings, theme),
             const SizedBox(width: 10),
-            _buildThemeOption('System', Icons.brightness_auto, ThemeMode.system, settings, theme),
+            _buildThemeOption('System', Icons.brightness_auto, ThemeMode.system,
+                settings, theme),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildThemeOption(String label, IconData icon, ThemeMode mode, SettingsProvider settings, ThemeData theme) {
+  Widget _buildThemeOption(String label, IconData icon, ThemeMode mode,
+      SettingsProvider settings, ThemeData theme) {
     final isSelected = settings.themeMode == mode;
     return Expanded(
       child: GestureDetector(
@@ -180,7 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.primary.withOpacity(0.12) : Colors.transparent,
+            color: isSelected
+                ? theme.colorScheme.primary.withOpacity(0.12)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected
@@ -191,7 +207,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           child: Column(
             children: [
-              Icon(icon, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 22),
+              Icon(icon,
+                  color: isSelected ? theme.colorScheme.primary : Colors.grey,
+                  size: 22),
               const SizedBox(height: 4),
               Text(
                 label,
@@ -208,11 +226,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildConnectionSetting(SettingsProvider settings, OllamaProvider ollama, ThemeData theme) {
+  Widget _buildConnectionSetting(
+      SettingsProvider settings, OllamaProvider ollama, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Ollama Server URL', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const Text('Ollama Server URL',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -221,8 +241,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: _urlController,
                 decoration: InputDecoration(
                   hintText: 'http://localhost:11434',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   isDense: true,
                 ),
               ),
@@ -234,8 +256,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ollama.updateBaseUrl(_urlController.text);
               },
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: const Text('Save'),
             ),
@@ -256,7 +280,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(Icons.circle, color: color, size: 10),
                     const SizedBox(width: 6),
-                    Text(label, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+                    Text(label,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: color,
+                            fontWeight: FontWeight.w600)),
                   ],
                 );
               },
@@ -265,7 +293,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton.icon(
               onPressed: ollama.checkStatus,
               icon: const Icon(Icons.refresh, size: 14),
-              label: const Text('Test Connection', style: TextStyle(fontSize: 12)),
+              label:
+                  const Text('Test Connection', style: TextStyle(fontSize: 12)),
             ),
           ],
         ),
@@ -273,7 +302,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildChatSettings(SettingsProvider settings, ThemeData theme, bool isDark) {
+  Widget _buildChatSettings(
+      SettingsProvider settings, ThemeData theme, bool isDark) {
     return Column(
       children: [
         _buildToggleSetting(
@@ -295,7 +325,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Default System Prompt', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            const Text('Default System Prompt',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             const SizedBox(height: 4),
             const Text(
               'Applied to new chats when no session-specific prompt is set',
@@ -307,7 +338,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'You are a helpful assistant...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.all(12),
                 isDense: true,
               ),
@@ -315,11 +347,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+        const Divider(height: 24),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Personal Memory (Shared Context)',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            const SizedBox(height: 4),
+            const Text(
+              'Facts about yourself that the assistant should remember.',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _memoryController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'I am a software developer...',
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding: const EdgeInsets.all(12),
+                isDense: true,
+              ),
+              onChanged: settings.setSharedMemory,
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildModelSettings(SettingsProvider settings, ThemeData theme, bool isDark) {
+  Widget _buildModelSettings(
+      SettingsProvider settings, ThemeData theme, bool isDark) {
     return Column(
       children: [
         Row(
@@ -328,10 +387,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Default Temperature', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const Text('Default Temperature',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   Text(
                     settings.defaultTemperature.toStringAsFixed(1),
-                    style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w700, fontSize: 18),
+                    style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18),
                   ),
                 ],
               ),
@@ -355,10 +419,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Max Tokens', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const Text('Max Tokens',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   Text(
                     settings.defaultMaxTokens.toString(),
-                    style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w700, fontSize: 18),
+                    style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18),
                   ),
                 ],
               ),
@@ -392,8 +461,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
+              Text(subtitle,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
             ],
           ),
         ),
@@ -411,7 +483,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.secondary]),
+                gradient: LinearGradient(colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary
+                ]),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.auto_awesome, color: Colors.white),
@@ -420,8 +495,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ollama Desktop', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                Text('Version 1.0.0', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                Text('Ollama Desktop',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                Text('Version 1.0.0',
+                    style: TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ],
@@ -454,7 +532,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
-      child: Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 11, color: color, fontWeight: FontWeight.w600)),
     );
   }
 }

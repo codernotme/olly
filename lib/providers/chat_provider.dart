@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter_tts/flutter_tts.dart';
 
 const _uuid = Uuid();
 
@@ -83,7 +84,9 @@ class ChatSession {
   factory ChatSession.fromJson(Map<String, dynamic> json) => ChatSession(
         id: json['id'],
         title: json['title'],
-        messages: (json['messages'] as List).map((m) => ChatMessage.fromJson(m)).toList(),
+        messages: (json['messages'] as List)
+            .map((m) => ChatMessage.fromJson(m))
+            .toList(),
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
         model: json['model'],
@@ -96,11 +99,20 @@ class ChatProvider extends ChangeNotifier {
   List<ChatSession> _sessions = [];
   String? _currentSessionId;
   bool _isGenerating = false;
+  final FlutterTts _tts = FlutterTts();
+  bool _voiceOutputEnabled = false;
 
   List<ChatSession> get sessions => _sessions;
   ChatSession? get currentSession =>
       _sessions.where((s) => s.id == _currentSessionId).firstOrNull;
   bool get isGenerating => _isGenerating;
+  bool get voiceOutputEnabled => _voiceOutputEnabled;
+
+  void toggleVoiceOutput() {
+    _voiceOutputEnabled = !_voiceOutputEnabled;
+    if (!_voiceOutputEnabled) _tts.stop();
+    notifyListeners();
+  }
 
   ChatProvider() {
     _loadSessions();
@@ -122,8 +134,8 @@ class ChatProvider extends ChangeNotifier {
   Future<void> _saveSessions() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          'chat_sessions', jsonEncode(_sessions.map((s) => s.toJson()).toList()));
+      await prefs.setString('chat_sessions',
+          jsonEncode(_sessions.map((s) => s.toJson()).toList()));
     } catch (_) {}
   }
 
@@ -173,12 +185,14 @@ class ChatProvider extends ChangeNotifier {
     final session = _sessions.where((s) => s.id == sessionId).firstOrNull;
     if (session == null) return;
 
-    final message = ChatMessage(role: role, content: content, isStreaming: isStreaming);
+    final message =
+        ChatMessage(role: role, content: content, isStreaming: isStreaming);
     session.messages.add(message);
     session.updatedAt = DateTime.now();
 
     if (session.messages.length == 1) {
-      session.title = content.length > 40 ? '${content.substring(0, 40)}...' : content;
+      session.title =
+          content.length > 40 ? '${content.substring(0, 40)}...' : content;
     }
 
     notifyListeners();
@@ -212,6 +226,9 @@ class ChatProvider extends ChangeNotifier {
       session.updatedAt = DateTime.now();
       notifyListeners();
       await _saveSessions();
+      if (_voiceOutputEnabled && message.content.isNotEmpty) {
+        _tts.speak(message.content);
+      }
     }
   }
 
@@ -233,6 +250,7 @@ class ChatProvider extends ChangeNotifier {
 
   void stopGeneration() {
     _isGenerating = false;
+    _tts.stop();
     final session = currentSession;
     if (session != null && session.messages.isNotEmpty) {
       final last = session.messages.last;

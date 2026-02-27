@@ -1,5 +1,5 @@
 name: ollama_desktop
-description: A comprehensive Ollama Desktop UI for managing and interacting with local AI models.
+description: Olly - A premium AI-powered desktop assistant with voice control, persistent memory, and multi-LLM support.
 publish_to: 'none'
 version: 1.0.0+1
 

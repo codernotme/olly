@@ -23,6 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   bool _speechEnabled = false;
   bool _isListening = false;
+  bool _isWakeWordMode = false;
 
   @override
   void initState() {
@@ -31,8 +32,49 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
+    _speechEnabled = await _speechToText.initialize(
+      onError: (error) => print('Speech Error: $error'),
+      onStatus: (status) {
+        if (status == 'done' && _isWakeWordMode) {
+          _listenForWakeWord(); // Keep listening in wake word mode
+        }
+      },
+    );
     setState(() {});
+  }
+
+  void _listenForWakeWord() async {
+    if (!_speechEnabled) return;
+    print('Olly is listening for wake word...');
+    await _speechToText.listen(
+      onResult: (result) {
+        final words = result.recognizedWords.toLowerCase();
+        if (words.contains('hey olly') || words.contains('olly')) {
+          _stopListening();
+          setState(() {
+            _isWakeWordMode = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Olly activated! How can I help?')),
+          );
+          _startListening(); // Now start actual command listening
+        }
+      },
+      listenFor: const Duration(seconds: 30),
+      pauseFor: const Duration(seconds: 3),
+      partialResults: true,
+    );
+  }
+
+  void _toggleWakeWordMode() {
+    setState(() {
+      _isWakeWordMode = !_isWakeWordMode;
+    });
+    if (_isWakeWordMode) {
+      _listenForWakeWord();
+    } else {
+      _stopListening();
+    }
   }
 
   void _startListening() async {
@@ -41,6 +83,9 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _inputController.text = result.recognizedWords;
         });
+        if (result.finalResult) {
+          _sendMessage();
+        }
       }
     });
     setState(() {
@@ -352,6 +397,18 @@ class _ChatScreenState extends State<ChatScreen> {
                 onPressed: () => chat.toggleVoiceOutput(),
                 iconSize: 20,
                 tooltip: 'Toggle Voice Output',
+              ),
+              IconButton(
+                icon: Icon(
+                  _isWakeWordMode
+                      ? Icons.record_voice_over
+                      : Icons.keyboard_voice_outlined,
+                  color:
+                      _isWakeWordMode ? theme.colorScheme.primary : Colors.grey,
+                ),
+                onPressed: _toggleWakeWordMode,
+                iconSize: 20,
+                tooltip: 'Listen for "Hey Olly"',
               ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),

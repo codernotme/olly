@@ -9,27 +9,37 @@ class ModelsScreen extends StatefulWidget {
   State<ModelsScreen> createState() => _ModelsScreenState();
 }
 
-class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderStateMixin {
+class _ModelsScreenState extends State<ModelsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _pullController = TextEditingController();
   String _searchQuery = '';
-  Map<String, dynamic>? _selectedModelInfo;
-  String? _viewingModel;
 
   // Popular models registry
   final List<_ModelTemplate> _popularModels = [
-    _ModelTemplate('llama3.2', '3B', '2.0 GB', 'Meta\'s latest Llama 3.2 - Great for general use', '🦙'),
-    _ModelTemplate('llama3.2:1b', '1B', '1.3 GB', 'Lightweight Llama 3.2 for fast responses', '🦙'),
-    _ModelTemplate('llama3.1', '8B', '4.9 GB', 'Powerful 8B model from Meta', '🦙'),
-    _ModelTemplate('mistral', '7B', '4.1 GB', 'Excellent performance, efficient', '⚡'),
-    _ModelTemplate('gemma2:2b', '2B', '1.6 GB', 'Google\'s Gemma 2 - very efficient', '💎'),
-    _ModelTemplate('gemma2', '9B', '5.4 GB', 'Google\'s Gemma 2 9B model', '💎'),
-    _ModelTemplate('phi3.5', '3.8B', '2.2 GB', 'Microsoft Phi-3.5 - punches above weight', '🔷'),
-    _ModelTemplate('qwen2.5', '7B', '4.7 GB', 'Alibaba\'s Qwen 2.5 - great multilingual', '🌟'),
-    _ModelTemplate('codellama', '7B', '3.8 GB', 'Meta\'s code-specialized model', '💻'),
-    _ModelTemplate('deepseek-coder-v2', '16B', '8.9 GB', 'DeepSeek Coder - excellent for coding', '🔍'),
+    _ModelTemplate('llama3.2', '3B', '2.0 GB',
+        'Meta\'s latest Llama 3.2 - Great for general use', '🦙'),
+    _ModelTemplate('llama3.2:1b', '1B', '1.3 GB',
+        'Lightweight Llama 3.2 for fast responses', '🦙'),
+    _ModelTemplate(
+        'llama3.1', '8B', '4.9 GB', 'Powerful 8B model from Meta', '🦙'),
+    _ModelTemplate(
+        'mistral', '7B', '4.1 GB', 'Excellent performance, efficient', '⚡'),
+    _ModelTemplate('gemma2:2b', '2B', '1.6 GB',
+        'Google\'s Gemma 2 - very efficient', '💎'),
+    _ModelTemplate(
+        'gemma2', '9B', '5.4 GB', 'Google\'s Gemma 2 9B model', '💎'),
+    _ModelTemplate('phi3.5', '3.8B', '2.2 GB',
+        'Microsoft Phi-3.5 - punches above weight', '🔷'),
+    _ModelTemplate('qwen2.5', '7B', '4.7 GB',
+        'Alibaba\'s Qwen 2.5 - great multilingual', '🌟'),
+    _ModelTemplate(
+        'codellama', '7B', '3.8 GB', 'Meta\'s code-specialized model', '💻'),
+    _ModelTemplate('deepseek-coder-v2', '16B', '8.9 GB',
+        'DeepSeek Coder - excellent for coding', '🔍'),
     _ModelTemplate('llava', '7B', '4.5 GB', 'Vision-language model', '👁️'),
-    _ModelTemplate('nomic-embed-text', '-', '274 MB', 'Text embeddings model', '📊'),
+    _ModelTemplate(
+        'nomic-embed-text', '-', '274 MB', 'Text embeddings model', '📊'),
   ];
 
   @override
@@ -83,12 +93,15 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Models', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+              Text('Olly Models',
+                  style: theme.textTheme.headlineMedium
+                      ?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
               Consumer<OllamaProvider>(
                 builder: (_, ollama, __) => Text(
                   '${ollama.models.length} installed • ${ollama.runningModels.length} running',
-                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6)),
                 ),
               ),
             ],
@@ -136,9 +149,12 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
               children: [
                 const Icon(Icons.model_training, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
-                Text('No models installed', style: theme.textTheme.titleLarge?.copyWith(color: Colors.grey)),
+                Text('No models installed',
+                    style: theme.textTheme.titleLarge
+                        ?.copyWith(color: Colors.grey)),
                 const SizedBox(height: 8),
-                const Text('Go to Pull Model tab to install models', style: TextStyle(color: Colors.grey)),
+                const Text('Go to Pull Model tab to install models',
+                    style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => _tabController.animateTo(1),
@@ -151,7 +167,9 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
 
         final filtered = _searchQuery.isEmpty
             ? ollama.models
-            : ollama.models.where((m) => m.name.contains(_searchQuery)).toList();
+            : ollama.models
+                .where((m) => m.name.contains(_searchQuery))
+                .toList();
 
         return Column(
           children: [
@@ -162,7 +180,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                 decoration: InputDecoration(
                   hintText: 'Search installed models...',
                   prefixIcon: const Icon(Icons.search, size: 18),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   isDense: true,
                 ),
@@ -172,7 +191,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
               child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
                 itemCount: filtered.length,
-                itemBuilder: (context, i) => _buildModelCard(filtered[i], ollama, theme, isDark),
+                itemBuilder: (context, i) =>
+                    _buildModelCard(filtered[i], ollama, theme, isDark),
               ),
             ),
           ],
@@ -181,7 +201,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildModelCard(OllamaModel model, OllamaProvider ollama, ThemeData theme, bool isDark) {
+  Widget _buildModelCard(
+      OllamaModel model, OllamaProvider ollama, ThemeData theme, bool isDark) {
     final isSelected = model.name == ollama.selectedModel;
     final isRunning = ollama.runningModels.contains(model.name);
 
@@ -213,7 +234,10 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
               height: 52,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [theme.colorScheme.primary, theme.colorScheme.tertiary ?? theme.colorScheme.secondary],
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -222,7 +246,10 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
               child: Center(
                 child: Text(
                   model.displayName[0].toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22),
                 ),
               ),
             ),
@@ -235,26 +262,35 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     children: [
                       Text(
                         model.displayName,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 16),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.grey.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(model.tag, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        child: Text(model.tag,
+                            style: const TextStyle(
+                                fontSize: 11, color: Colors.grey)),
                       ),
                       if (isRunning) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.green.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('Running', style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600)),
+                          child: const Text('Running',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ],
@@ -262,13 +298,17 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                   const SizedBox(height: 4),
                   Text(
                     'Size: ${model.size} • Modified: ${_formatDate(model.modifiedAt)}',
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withOpacity(0.5)),
                   ),
                   if (model.details.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       'Family: ${model.details['family'] ?? 'Unknown'} • Params: ${model.details['parameter_size'] ?? '?'}',
-                      style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.5)),
                     ),
                   ],
                 ],
@@ -282,7 +322,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     onPressed: () => ollama.selectModel(model.name),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(90, 36),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Text('Select', style: TextStyle(fontSize: 13)),
                   )
@@ -293,7 +334,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     label: const Text('Active', style: TextStyle(fontSize: 13)),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(90, 36),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                 const SizedBox(height: 8),
@@ -305,7 +347,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     minimumSize: const Size(90, 36),
                     foregroundColor: Colors.red,
                     side: const BorderSide(color: Colors.red, width: 0.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ],
@@ -321,15 +364,18 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Model?'),
-        content: Text('Are you sure you want to delete "$modelName"? This cannot be undone.'),
+        content: Text(
+            'Are you sure you want to delete "$modelName"? This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               ollama.deleteModel(modelName);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, foregroundColor: Colors.white),
             child: const Text('Delete'),
           ),
         ],
@@ -351,16 +397,21 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                 decoration: BoxDecoration(
                   color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+                  border: Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.15)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Pull a Model', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Text('Pull a Model',
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     Text(
                       'Enter a model name from the Ollama library (e.g., llama3.2, mistral:7b)',
-                      style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -370,8 +421,10 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                             controller: _pullController,
                             decoration: InputDecoration(
                               hintText: 'Model name (e.g., llama3.2)',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                             ),
                             onSubmitted: (_) => _startPull(ollama),
                           ),
@@ -383,7 +436,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                           label: const Text('Pull'),
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(120, 50),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
                       ],
@@ -395,7 +449,9 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
               // Active pulls
               if (ollama.pullProgress.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Text('Downloading', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                Text('Downloading',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 ...ollama.pullProgress.entries.map((e) {
                   final progress = e.value;
@@ -403,22 +459,28 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.04)
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+                      border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.15)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Text(e.key, style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text(e.key,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600)),
                             const Spacer(),
                             Text(
                               progress.total > 0
                                   ? '${(progress.progress * 100).toStringAsFixed(1)}%'
                                   : progress.status,
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -430,7 +492,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                         const SizedBox(height: 4),
                         Text(
                           progress.status,
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -471,7 +534,8 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
   Widget _buildLibraryCard(_ModelTemplate model, ThemeData theme, bool isDark) {
     return Consumer<OllamaProvider>(
       builder: (context, ollama, _) {
-        final isInstalled = ollama.models.any((m) => m.displayName == model.name.split(':').first);
+        final isInstalled = ollama.models
+            .any((m) => m.displayName == model.name.split(':').first);
         final isPulling = ollama.pullProgress.containsKey(model.name);
 
         return Container(
@@ -496,23 +560,30 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(model.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                        Text(model.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 14)),
                         Text(
                           '${model.paramSize} • ${model.size}',
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
                     ),
                   ),
                   if (isInstalled)
-                    const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                    const Icon(Icons.check_circle,
+                        color: Colors.green, size: 18),
                 ],
               ),
               const SizedBox(height: 8),
               Expanded(
                 child: Text(
                   model.description,
-                  style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.6), height: 1.4),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      height: 1.4),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -526,21 +597,25 @@ class _ModelsScreenState extends State<ModelsScreen> with SingleTickerProviderSt
                         ? OutlinedButton.icon(
                             onPressed: null,
                             icon: const Icon(Icons.check, size: 14),
-                            label: const Text('Installed', style: TextStyle(fontSize: 12)),
+                            label: const Text('Installed',
+                                style: TextStyle(fontSize: 12)),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 32),
                               foregroundColor: Colors.green,
                               side: const BorderSide(color: Colors.green),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
                           )
                         : FilledButton.icon(
                             onPressed: () => ollama.pullModel(model.name),
                             icon: const Icon(Icons.download, size: 14),
-                            label: const Text('Pull', style: TextStyle(fontSize: 12)),
+                            label: const Text('Pull',
+                                style: TextStyle(fontSize: 12)),
                             style: FilledButton.styleFrom(
                               minimumSize: const Size(0, 32),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
                           ),
               ),
@@ -563,5 +638,6 @@ class _ModelTemplate {
   final String description;
   final String emoji;
 
-  const _ModelTemplate(this.name, this.paramSize, this.size, this.description, this.emoji);
+  const _ModelTemplate(
+      this.name, this.paramSize, this.size, this.description, this.emoji);
 }

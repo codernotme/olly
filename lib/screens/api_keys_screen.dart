@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/ollama_provider.dart';
-import 'dart:convert';
 import 'dart:math';
 
 class ApiKeysScreen extends StatefulWidget {
@@ -13,14 +12,12 @@ class ApiKeysScreen extends StatefulWidget {
   State<ApiKeysScreen> createState() => _ApiKeysScreenState();
 }
 
-class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProviderStateMixin {
+class _ApiKeysScreenState extends State<ApiKeysScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _nameController = TextEditingController();
   String? _generatedKey;
   bool _showKey = false;
-
-  // Simulated API usage data
-  final List<Map<String, dynamic>> _apiLogs = [];
 
   @override
   void initState() {
@@ -36,10 +33,12 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
   }
 
   String _generateApiKey() {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random.secure();
     final prefix = 'sk-ollama-';
-    final body = List.generate(32, (_) => chars[random.nextInt(chars.length)]).join();
+    final body =
+        List.generate(32, (_) => chars[random.nextInt(chars.length)]).join();
     return '$prefix$body';
   }
 
@@ -59,11 +58,14 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('API Keys', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+                Text('Olly API Keys',
+                    style: theme.textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 4),
                 Text(
-                  'Generate and manage API keys for programmatic access to your Ollama instance',
-                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                  'Generate and manage API keys for programmatic access to Olly',
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6)),
                 ),
               ],
             ),
@@ -84,7 +86,8 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                 Expanded(
                   child: Text(
                     'These API keys are for local organization and tracking. Ollama itself runs without authentication on localhost. Use these keys to organize access in your applications.',
-                    style: const TextStyle(fontSize: 12, height: 1.5, color: Colors.blue),
+                    style: const TextStyle(
+                        fontSize: 12, height: 1.5, color: Colors.blue),
                   ),
                 ),
               ],
@@ -124,11 +127,17 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.key_off, size: 64, color: Colors.grey.withOpacity(0.5)),
+                Icon(Icons.key_off,
+                    size: 64, color: Colors.grey.withOpacity(0.5)),
                 const SizedBox(height: 16),
-                const Text('No API keys yet', style: TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.w600)),
+                const Text('No API keys yet',
+                    style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                const Text('Generate your first API key', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                const Text('Generate your first API key',
+                    style: TextStyle(color: Colors.grey, fontSize: 13)),
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () => _tabController.animateTo(1),
@@ -152,7 +161,8 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildKeyCard(ApiKey key, SettingsProvider settings, ThemeData theme, bool isDark) {
+  Widget _buildKeyCard(
+      ApiKey key, SettingsProvider settings, ThemeData theme, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -192,12 +202,17 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                   children: [
                     Row(
                       children: [
-                        Text(key.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                        Text(key.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 15)),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: key.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                            color: key.isActive
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -213,7 +228,9 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                     ),
                     Text(
                       'Created ${_formatDate(key.createdAt)} • ${key.usageCount} API calls',
-                      style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withOpacity(0.5)),
                     ),
                   ],
                 ),
@@ -225,7 +242,8 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                     onChanged: (_) => settings.toggleApiKey(key.id),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.red, size: 18),
                     onPressed: () => _confirmDeleteKey(key.id, settings),
                   ),
                 ],
@@ -239,7 +257,8 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             decoration: BoxDecoration(
               color: isDark ? Colors.black26 : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+              border:
+                  Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
             ),
             child: Row(
               children: [
@@ -248,7 +267,8 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                 Expanded(
                   child: Text(
                     '${key.key.substring(0, 20)}${'•' * 20}${key.key.substring(key.key.length - 4)}',
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                    style:
+                        const TextStyle(fontFamily: 'monospace', fontSize: 13),
                   ),
                 ),
                 IconButton(
@@ -256,12 +276,15 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: key.key));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('API key copied!'), duration: Duration(seconds: 2)),
+                      const SnackBar(
+                          content: Text('API key copied!'),
+                          duration: Duration(seconds: 2)),
                     );
                   },
                   tooltip: 'Copy',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                 ),
               ],
             ),
@@ -278,13 +301,15 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
         title: const Text('Delete API Key?'),
         content: const Text('This action cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               settings.deleteApiKey(id);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, foregroundColor: Colors.white),
             child: const Text('Delete'),
           ),
         ],
@@ -304,19 +329,23 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             decoration: BoxDecoration(
               color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+              border: Border.all(
+                  color: theme.colorScheme.outline.withOpacity(0.15)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Generate New API Key', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                Text('Generate New API Key',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'Key Name (e.g., My App, Development)',
                     hintText: 'Give your key a descriptive name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Icons.label_outline),
                   ),
                 ),
@@ -327,7 +356,9 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                     onPressed: () {
                       if (_nameController.text.trim().isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please enter a name for your key')),
+                          const SnackBar(
+                              content:
+                                  Text('Please enter a name for your key')),
                         );
                         return;
                       }
@@ -336,14 +367,17 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                         _generatedKey = key;
                         _showKey = true;
                       });
-                      context.read<SettingsProvider>().addApiKey(_nameController.text.trim(), key);
+                      context
+                          .read<SettingsProvider>()
+                          .addApiKey(_nameController.text.trim(), key);
                       _nameController.clear();
                     },
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Generate API Key'),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -365,9 +399,14 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      const Icon(Icons.check_circle,
+                          color: Colors.green, size: 20),
                       const SizedBox(width: 8),
-                      const Text('API Key Generated!', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.green, fontSize: 16)),
+                      const Text('API Key Generated!',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.green,
+                              fontSize: 16)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -386,20 +425,30 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
                       children: [
                         Expanded(
                           child: SelectableText(
-                            _showKey ? _generatedKey! : '${_generatedKey!.substring(0, 20)}${'•' * 20}',
-                            style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                            _showKey
+                                ? _generatedKey!
+                                : '${_generatedKey!.substring(0, 20)}${'•' * 20}',
+                            style: const TextStyle(
+                                fontFamily: 'monospace', fontSize: 14),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(_showKey ? Icons.visibility_off : Icons.visibility, size: 18),
+                          icon: Icon(
+                              _showKey
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18),
                           onPressed: () => setState(() => _showKey = !_showKey),
                         ),
                         IconButton(
                           icon: const Icon(Icons.copy, size: 18),
                           onPressed: () {
-                            Clipboard.setData(ClipboardData(text: _generatedKey!));
+                            Clipboard.setData(
+                                ClipboardData(text: _generatedKey!));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Copied to clipboard!'), duration: Duration(seconds: 2)),
+                              const SnackBar(
+                                  content: Text('Copied to clipboard!'),
+                                  duration: Duration(seconds: 2)),
                             );
                           },
                         ),
@@ -419,17 +468,26 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
     return Consumer<OllamaProvider>(
       builder: (context, ollama, _) {
         final baseUrl = ollama.baseUrl;
-        
+
         final endpoints = [
-          _Endpoint('GET', '$baseUrl/api/tags', 'List Models', 'Returns all locally available models'),
-          _Endpoint('POST', '$baseUrl/api/chat', 'Chat', 'Generate a chat completion (streaming supported)'),
-          _Endpoint('POST', '$baseUrl/api/generate', 'Generate', 'Generate text completion'),
-          _Endpoint('POST', '$baseUrl/api/pull', 'Pull Model', 'Download a model from the library'),
-          _Endpoint('DELETE', '$baseUrl/api/delete', 'Delete Model', 'Remove a locally installed model'),
-          _Endpoint('POST', '$baseUrl/api/embeddings', 'Embeddings', 'Generate text embeddings'),
-          _Endpoint('GET', '$baseUrl/api/ps', 'Running Models', 'List currently loaded models'),
-          _Endpoint('POST', '$baseUrl/api/show', 'Model Info', 'Get details about a specific model'),
-          _Endpoint('POST', '$baseUrl/api/copy', 'Copy Model', 'Duplicate a model'),
+          _Endpoint('GET', '$baseUrl/api/tags', 'List Models',
+              'Returns all locally available models'),
+          _Endpoint('POST', '$baseUrl/api/chat', 'Chat',
+              'Generate a chat completion (streaming supported)'),
+          _Endpoint('POST', '$baseUrl/api/generate', 'Generate',
+              'Generate text completion'),
+          _Endpoint('POST', '$baseUrl/api/pull', 'Pull Model',
+              'Download a model from the library'),
+          _Endpoint('DELETE', '$baseUrl/api/delete', 'Delete Model',
+              'Remove a locally installed model'),
+          _Endpoint('POST', '$baseUrl/api/embeddings', 'Embeddings',
+              'Generate text embeddings'),
+          _Endpoint('GET', '$baseUrl/api/ps', 'Running Models',
+              'List currently loaded models'),
+          _Endpoint('POST', '$baseUrl/api/show', 'Model Info',
+              'Get details about a specific model'),
+          _Endpoint(
+              'POST', '$baseUrl/api/copy', 'Copy Model', 'Duplicate a model'),
         ];
 
         return ListView(
@@ -440,29 +498,37 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
               decoration: BoxDecoration(
                 color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+                border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.15)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Base URL', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  Text('Base URL',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.black26 : Colors.grey.shade50,
+                            color:
+                                isDark ? Colors.black26 : Colors.grey.shade50,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(baseUrl, style: const TextStyle(fontFamily: 'monospace', fontSize: 14)),
+                          child: Text(baseUrl,
+                              style: const TextStyle(
+                                  fontFamily: 'monospace', fontSize: 14)),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(Icons.copy, size: 16),
-                        onPressed: () => Clipboard.setData(ClipboardData(text: baseUrl)),
+                        onPressed: () =>
+                            Clipboard.setData(ClipboardData(text: baseUrl)),
                       ),
                     ],
                   ),
@@ -470,7 +536,9 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
               ),
             ),
             const SizedBox(height: 16),
-            Text('Endpoints', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            Text('Endpoints',
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             ...endpoints.map((e) => _buildEndpointCard(e, theme, isDark)),
             const SizedBox(height: 16),
@@ -509,7 +577,10 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             child: Center(
               child: Text(
                 endpoint.method,
-                style: TextStyle(color: methodColor, fontSize: 11, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                    color: methodColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800),
               ),
             ),
           ),
@@ -518,18 +589,25 @@ class _ApiKeysScreenState extends State<ApiKeysScreen> with SingleTickerProvider
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(endpoint.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(endpoint.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13)),
                 Text(
                   endpoint.url,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.grey),
+                  style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      color: Colors.grey),
                 ),
-                Text(endpoint.description, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                Text(endpoint.description,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey)),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.copy, size: 14),
-            onPressed: () => Clipboard.setData(ClipboardData(text: endpoint.url)),
+            onPressed: () =>
+                Clipboard.setData(ClipboardData(text: endpoint.url)),
           ),
         ],
       ),
@@ -563,18 +641,27 @@ console.log(data.message.content);
         children: [
           Row(
             children: [
-              const Text('JavaScript Example', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+              const Text('JavaScript Example',
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600)),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.copy, color: Colors.white54, size: 16),
-                onPressed: () => Clipboard.setData(const ClipboardData(text: code)),
+                onPressed: () =>
+                    Clipboard.setData(const ClipboardData(text: code)),
               ),
             ],
           ),
           const SizedBox(height: 8),
           SelectableText(
             code,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xFF9CDCFE), height: 1.6),
+            style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 12,
+                color: Color(0xFF9CDCFE),
+                height: 1.6),
           ),
         ],
       ),

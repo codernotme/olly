@@ -9,6 +9,7 @@ import 'settings_screen.dart';
 import 'dashboard_screen.dart';
 import 'editor_screen.dart';
 import 'bots_screen.dart';
+import 'terminal_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -27,6 +28,7 @@ class _MainShellState extends State<MainShell> {
     AgentsScreen(),
     EditorScreen(),
     BotsScreen(),
+    TerminalScreen(),
     ApiKeysScreen(),
     SettingsScreen(),
   ];
@@ -38,6 +40,7 @@ class _MainShellState extends State<MainShell> {
     _NavItem(icon: Icons.smart_toy_rounded, label: 'Agents'),
     _NavItem(icon: Icons.code_rounded, label: 'Code Editor'),
     _NavItem(icon: Icons.chat, label: 'Bots'),
+    _NavItem(icon: Icons.terminal_rounded, label: 'Console'),
     _NavItem(icon: Icons.key_rounded, label: 'API Keys'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
   ];

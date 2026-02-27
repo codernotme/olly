@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/agent_provider.dart';
 import '../providers/ollama_provider.dart';
-import '../providers/chat_provider.dart';
 
 class AgentsScreen extends StatefulWidget {
   const AgentsScreen({super.key});
@@ -27,8 +26,12 @@ class _AgentsScreenState extends State<AgentsScreen> {
               Container(
                 width: 280,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0E0E1B) : const Color(0xFFF5F5F8),
-                  border: Border(right: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+                  color: isDark
+                      ? const Color(0xFF0E0E1B)
+                      : const Color(0xFFF5F5F8),
+                  border: Border(
+                      right: BorderSide(
+                          color: theme.colorScheme.outline.withOpacity(0.15))),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,11 +41,16 @@ class _AgentsScreenState extends State<AgentsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Agents', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+                          Text('Agents',
+                              style: theme.textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.w800)),
                           const SizedBox(height: 4),
                           Text(
                             'Create AI sub-agents with specialized roles',
-                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.6)),
                           ),
                         ],
                       ),
@@ -53,7 +61,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                         onPressed: () => _showCreateAgentDialog(context),
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text('New Agent'),
-                        style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 40)),
+                        style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 40)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -63,19 +72,24 @@ class _AgentsScreenState extends State<AgentsScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.smart_toy_outlined, size: 48, color: Colors.grey),
+                                  Icon(Icons.smart_toy_outlined,
+                                      size: 48, color: Colors.grey),
                                   SizedBox(height: 12),
-                                  Text('No agents yet', style: TextStyle(color: Colors.grey)),
+                                  Text('No agents yet',
+                                      style: TextStyle(color: Colors.grey)),
                                 ],
                               ),
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
                               itemCount: agents.agents.length,
                               itemBuilder: (context, i) {
                                 final agent = agents.agents[i];
-                                final isActive = agents.activeAgent?.id == agent.id;
-                                return _buildAgentListTile(agent, isActive, agents, theme);
+                                final isActive =
+                                    agents.activeAgent?.id == agent.id;
+                                return _buildAgentListTile(
+                                    agent, isActive, agents, theme);
                               },
                             ),
                     ),
@@ -86,7 +100,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
               Expanded(
                 child: agents.activeAgent == null
                     ? _buildEmptyState(theme)
-                    : _buildAgentPanel(agents.activeAgent!, agents, theme, isDark),
+                    : _buildAgentPanel(
+                        agents.activeAgent!, agents, theme, isDark),
               ),
             ],
           );
@@ -95,7 +110,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  Widget _buildAgentListTile(Agent agent, bool isActive, AgentProvider agents, ThemeData theme) {
+  Widget _buildAgentListTile(
+      Agent agent, bool isActive, AgentProvider agents, ThemeData theme) {
     final statusColor = switch (agent.status) {
       AgentStatus.running => Colors.green,
       AgentStatus.paused => Colors.orange,
@@ -107,9 +123,13 @@ class _AgentsScreenState extends State<AgentsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
-        color: isActive ? theme.colorScheme.primary.withOpacity(0.12) : Colors.transparent,
+        color: isActive
+            ? theme.colorScheme.primary.withOpacity(0.12)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
-        border: isActive ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3)) : null,
+        border: isActive
+            ? Border.all(color: theme.colorScheme.primary.withOpacity(0.3))
+            : null,
       ),
       child: ListTile(
         dense: true,
@@ -121,7 +141,9 @@ class _AgentsScreenState extends State<AgentsScreen> {
             color: theme.colorScheme.primary.withOpacity(0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Center(child: Text(agent.avatarEmoji ?? agent.defaultEmoji, style: const TextStyle(fontSize: 18))),
+          child: Center(
+              child: Text(agent.avatarEmoji ?? agent.defaultEmoji,
+                  style: const TextStyle(fontSize: 18))),
         ),
         title: Text(
           agent.name,
@@ -158,11 +180,14 @@ class _AgentsScreenState extends State<AgentsScreen> {
         children: [
           const Text('🤖', style: TextStyle(fontSize: 64)),
           const SizedBox(height: 20),
-          Text('Select or create an agent', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+          Text('Select or create an agent',
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(
             'Agents are specialized AI assistants that can\nperform specific tasks autonomously',
-            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+            style:
+                TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -176,9 +201,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  Widget _buildAgentPanel(Agent agent, AgentProvider agents, ThemeData theme, bool isDark) {
-    final taskController = TextEditingController();
-
+  Widget _buildAgentPanel(
+      Agent agent, AgentProvider agents, ThemeData theme, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -187,19 +211,31 @@ class _AgentsScreenState extends State<AgentsScreen> {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
-            border: Border(bottom: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+            border: Border(
+                bottom: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.15))),
           ),
           child: Row(
             children: [
-              Text(agent.avatarEmoji ?? agent.defaultEmoji, style: const TextStyle(fontSize: 36)),
+              Text(agent.avatarEmoji ?? agent.defaultEmoji,
+                  style: const TextStyle(fontSize: 36)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(agent.name, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                    Text(agent.typeLabel, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
-                    Text(agent.description, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                    Text(agent.name,
+                        style: theme.textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w800)),
+                    Text(agent.typeLabel,
+                        style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            fontSize: 13)),
+                    Text(agent.description,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.5))),
                   ],
                 ),
               ),
@@ -211,7 +247,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 18),
-                    onPressed: () => _showEditAgentDialog(context, agent, agents),
+                    onPressed: () =>
+                        _showEditAgentDialog(context, agent, agents),
                   ),
                 ],
               ),
@@ -248,26 +285,37 @@ class _AgentsScreenState extends State<AgentsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        border: Border(right: BorderSide(color: theme.colorScheme.outline.withOpacity(0.1))),
+        border: Border(
+            right:
+                BorderSide(color: theme.colorScheme.outline.withOpacity(0.1))),
       ),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Configuration', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            Text('Configuration',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             _buildConfigCard('Model', agent.model, Icons.model_training, theme),
-            _buildConfigCard('Temperature', agent.temperature.toStringAsFixed(1), Icons.thermostat, theme),
-            _buildConfigCard('Max Steps', agent.maxSteps.toString(), Icons.repeat, theme),
+            _buildConfigCard('Temperature',
+                agent.temperature.toStringAsFixed(1), Icons.thermostat, theme),
+            _buildConfigCard(
+                'Max Steps', agent.maxSteps.toString(), Icons.repeat, theme),
             const SizedBox(height: 16),
-            Text('System Prompt', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            Text('System Prompt',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade50,
+                color: isDark
+                    ? Colors.white.withOpacity(0.04)
+                    : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: theme.colorScheme.outline.withOpacity(0.15)),
+                border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.15)),
               ),
               child: Text(
                 agent.systemPrompt,
@@ -277,20 +325,28 @@ class _AgentsScreenState extends State<AgentsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Tools', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+            Text('Tools',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             ...agent.tools.map((tool) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
                     children: [
                       Icon(
-                        tool.enabled ? Icons.check_box : Icons.check_box_outline_blank,
-                        color: tool.enabled ? theme.colorScheme.primary : Colors.grey,
+                        tool.enabled
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        color: tool.enabled
+                            ? theme.colorScheme.primary
+                            : Colors.grey,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(tool.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                        child: Text(tool.name,
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500)),
                       ),
                     ],
                   ),
@@ -301,15 +357,19 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  Widget _buildConfigCard(String label, String value, IconData icon, ThemeData theme) {
+  Widget _buildConfigCard(
+      String label, String value, IconData icon, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Icon(icon, size: 14, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          Text('$label: ',
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(value,
+              style:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -321,7 +381,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.play_circle_outline, size: 48, color: Colors.grey.withOpacity(0.5)),
+            Icon(Icons.play_circle_outline,
+                size: 48, color: Colors.grey.withOpacity(0.5)),
             const SizedBox(height: 12),
             const Text('No tasks yet', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 4),
@@ -365,7 +426,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'Step ${i + 1}: ${step.action}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                   const Spacer(),
                   Text(
@@ -388,14 +450,17 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  Widget _buildTaskInput(Agent agent, AgentProvider agents, ThemeData theme, bool isDark) {
+  Widget _buildTaskInput(
+      Agent agent, AgentProvider agents, ThemeData theme, bool isDark) {
     final controller = TextEditingController();
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
-        border: Border(top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
+        border: Border(
+            top:
+                BorderSide(color: theme.colorScheme.outline.withOpacity(0.15))),
       ),
       child: Row(
         children: [
@@ -404,8 +469,10 @@ class _AgentsScreenState extends State<AgentsScreen> {
               controller: controller,
               decoration: InputDecoration(
                 hintText: 'Give ${agent.name} a task...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -421,7 +488,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
             label: const Text('Run'),
             style: FilledButton.styleFrom(
               minimumSize: const Size(100, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -429,7 +497,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  Future<void> _runAgentTask(Agent agent, String task, AgentProvider agents) async {
+  Future<void> _runAgentTask(
+      Agent agent, String task, AgentProvider agents) async {
     agents.setAgentStatus(agent.id, AgentStatus.running);
     final ollama = context.read<OllamaProvider>();
 
@@ -455,7 +524,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
 
     agents.addStep(
       agent.id,
-      AgentStep(action: 'Generated response', result: fullResponse, success: true),
+      AgentStep(
+          action: 'Generated response', result: fullResponse, success: true),
     );
     agents.setLastOutput(agent.id, fullResponse);
     agents.setAgentStatus(agent.id, AgentStatus.completed);
@@ -482,7 +552,9 @@ class _AgentsScreenState extends State<AgentsScreen> {
         children: [
           Icon(Icons.circle, color: color, size: 8),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -514,7 +586,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                       controller: nameCtrl,
                       decoration: InputDecoration(
                         labelText: 'Agent Name',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -522,7 +595,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                       controller: descCtrl,
                       decoration: InputDecoration(
                         labelText: 'Description',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -530,11 +604,18 @@ class _AgentsScreenState extends State<AgentsScreen> {
                       value: selectedType,
                       decoration: InputDecoration(
                         labelText: 'Agent Type',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                       items: AgentType.values.map((t) {
-                        final agent = Agent(name: '', description: '', type: t, model: '', systemPrompt: '');
-                        return DropdownMenuItem(value: t, child: Text(agent.typeLabel));
+                        final agent = Agent(
+                            name: '',
+                            description: '',
+                            type: t,
+                            model: '',
+                            systemPrompt: '');
+                        return DropdownMenuItem(
+                            value: t, child: Text(agent.typeLabel));
                       }).toList(),
                       onChanged: (v) => setState(() => selectedType = v!),
                     ),
@@ -543,9 +624,13 @@ class _AgentsScreenState extends State<AgentsScreen> {
                       value: selectedModel,
                       decoration: InputDecoration(
                         labelText: 'Model',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                      items: ollama.models.map((m) => DropdownMenuItem(value: m.name, child: Text(m.name))).toList(),
+                      items: ollama.models
+                          .map((m) => DropdownMenuItem(
+                              value: m.name, child: Text(m.name)))
+                          .toList(),
                       onChanged: (v) => setState(() => selectedModel = v),
                     ),
                   ],
@@ -553,10 +638,13 @@ class _AgentsScreenState extends State<AgentsScreen> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel')),
               FilledButton(
                 onPressed: () {
-                  if (nameCtrl.text.trim().isEmpty || selectedModel == null) return;
+                  if (nameCtrl.text.trim().isEmpty || selectedModel == null)
+                    return;
                   context.read<AgentProvider>().createAgent(
                         name: nameCtrl.text.trim(),
                         description: descCtrl.text.trim(),
@@ -574,7 +662,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
     );
   }
 
-  void _showEditAgentDialog(BuildContext context, Agent agent, AgentProvider agents) {
+  void _showEditAgentDialog(
+      BuildContext context, Agent agent, AgentProvider agents) {
     final nameCtrl = TextEditingController(text: agent.name);
     final systemCtrl = TextEditingController(text: agent.systemPrompt);
     double temp = agent.temperature;
@@ -593,7 +682,8 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   controller: nameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -602,22 +692,31 @@ class _AgentsScreenState extends State<AgentsScreen> {
                   maxLines: 5,
                   decoration: InputDecoration(
                     labelText: 'System Prompt',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     const Text('Temperature: '),
-                    Text(temp.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(temp.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
-                Slider(value: temp, min: 0, max: 2, divisions: 20, onChanged: (v) => setState(() => temp = v)),
+                Slider(
+                    value: temp,
+                    min: 0,
+                    max: 2,
+                    divisions: 20,
+                    onChanged: (v) => setState(() => temp = v)),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
             FilledButton(
               onPressed: () {
                 agents.updateAgent(

@@ -1,52 +1,18 @@
-# 🦙 Ollama Desktop
+# 🦙 Olly
 
-A comprehensive Flutter desktop application for managing and interacting with Ollama — your local AI model hub.
+![Olly Logo](assets/logo.png)
 
-![Ollama Desktop](https://via.placeholder.com/1200x600/6B4EFF/FFFFFF?text=Ollama+Desktop)
+Olly is a premium, AI-powered desktop assistant featuring voice interaction, persistent memory, a built-in code editor, and multi-LLM support (Ollama, Claude, OpenAI).
 
-## ✨ Features
+## Features
 
-### 🏠 Dashboard
-- At-a-glance status of your Ollama instance
-- Stats for installed models, active chats, agents, and running models
-- Quick action buttons for common tasks
-- Recent chats overview
-
-### 💬 Chat Interface
-- **Multi-session chat** — create, switch between, and manage multiple conversation threads
-- **Real-time streaming** — watch responses appear word by word
-- **Markdown rendering** — beautiful rendering of code blocks, tables, lists, and more
-- **Per-session settings** — unique model, temperature, and system prompt per chat
-- **Message actions** — copy, regenerate responses
-- **Chat history** — persistent across app restarts
-- **Keyboard shortcuts** — Enter to send, Shift+Enter for newline
-
-### 🤖 Model Management
-- **Installed models** — view all locally installed models with size and metadata
-- **Model library** — browse popular models with one-click install
-- **Pull models** — download any model from the Ollama registry with live progress
-- **Delete models** — remove models to free up disk space
-- **Model selection** — switch between models from anywhere in the app
-
-### 🧩 Sub-Agents
-- **Create specialized agents** with custom roles (Coder, Researcher, Writer, Analyst)
-- **Custom system prompts** per agent
-- **Tool assignment** — assign tools relevant to each agent's role
-- **Task execution** — run tasks and track step-by-step progress
-- **Agent configuration** — tune temperature and behavior per agent
-
-### 🔑 API Keys
-- **Generate API keys** for programmatic access organization
-- **Key management** — enable/disable, delete keys
-- **Full API reference** — browse all Ollama endpoints with examples
-- **Code snippets** — ready-to-use code examples in JavaScript
-
-### ⚙️ Settings
-- **Theme** — Light, Dark, or System automatic
-- **Connection** — Custom Ollama server URL (supports remote instances)
-- **Chat defaults** — streaming toggle, markdown toggle, default system prompt
-- **Model defaults** — temperature and max token defaults
-- **Persistent** — all settings saved and restored
+- **Nice UI**: Sleek glassmorphic design with smooth animations.
+- **Voice Assistant**: Integrated "Hey Olly" wake-word detection and voice responses (TTS).
+- **Personal Assistant**: Persistent user memory for deeply personalized context.
+- **Code Editor**: Feature-rich AI code workspace with syntax highlighting.
+- **Multi-LLM**: Connect to local Ollama models or external APIs (GPT-4, Claude 3).
+- **Social Bots**: Interface your local AI with Telegram and WhatsApp.
+- **System Console**: Native terminal and log viewer for debugging and system control.
 
 ## 🚀 Getting Started
 
@@ -54,48 +20,24 @@ A comprehensive Flutter desktop application for managing and interacting with Ol
 
 1. **Install Flutter** (3.0 or higher):
    ```bash
-   # Follow instructions at https://flutter.dev/docs/get-started/install
    flutter --version
    ```
 
-2. **Enable desktop support:**
-   ```bash
-   flutter config --enable-macos-desktop
-   flutter config --enable-windows-desktop
-   flutter config --enable-linux-desktop
-   ```
-
-3. **Install Ollama** (if not already installed):
-   - macOS: `brew install ollama`
-   - Linux: `curl -fsSL https://ollama.com/install.sh | sh`
-   - Windows: Download from https://ollama.com/download
+2. **Install Ollama** (if not already installed):
+   - Visit [Ollama.com](https://ollama.com) to download.
 
 ### Installation
 
 ```bash
-# Clone or download this project
-cd ollama_desktop
+# Clone the repository
+git clone https://github.com/codernotme/olly.git
+cd olly
 
 # Install dependencies
 flutter pub get
 
-# Run on your platform
-flutter run -d macos     # macOS
-flutter run -d windows   # Windows
-flutter run -d linux     # Linux
-```
-
-### Build for Distribution
-
-```bash
-# macOS
-flutter build macos --release
-
-# Windows
-flutter build windows --release
-
-# Linux
-flutter build linux --release
+# Run Olly
+flutter run -d linux # or macos/windows
 ```
 
 ## 📁 Project Structure
@@ -104,54 +46,16 @@ flutter build linux --release
 lib/
 ├── main.dart                    # App entry point
 ├── providers/
-│   ├── ollama_provider.dart     # Ollama API & model management
-│   ├── chat_provider.dart       # Chat sessions & messages
+│   ├── log_provider.dart        # Console & system log management
+│   ├── chat_provider.dart       # Chat sessions & memory
 │   ├── settings_provider.dart   # App settings & API keys
-│   └── agent_provider.dart      # Sub-agent management
+│   └── agent_provider.dart      # Agent management
 └── screens/
-    ├── main_shell.dart          # Navigation shell with sidebar
-    ├── dashboard_screen.dart    # Overview dashboard
-    ├── chat_screen.dart         # Chat interface
-    ├── models_screen.dart       # Model management
-    ├── agents_screen.dart       # Sub-agent builder
-    ├── api_keys_screen.dart     # API key management
-    └── settings_screen.dart     # App settings
+    ├── main_shell.dart          # Navigation shell
+    ├── chat_screen.dart         # Chat & Voice interface
+    ├── terminal_screen.dart     # System Console
+    ├── editor_screen.dart       # Code Workspace
+    └── settings_screen.dart     # Configuration
 ```
 
-## 🔧 Configuration
-
-The app connects to Ollama at `http://localhost:11434` by default. You can change this in Settings → Connection if running Ollama on a different port or machine.
-
-## 📖 Ollama API Reference
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/tags` | List installed models |
-| POST | `/api/chat` | Chat completion (streaming) |
-| POST | `/api/generate` | Text generation |
-| POST | `/api/pull` | Download model |
-| DELETE | `/api/delete` | Remove model |
-| POST | `/api/embeddings` | Generate embeddings |
-| GET | `/api/ps` | List running models |
-| POST | `/api/show` | Model details |
-
-## 🛠️ Tech Stack
-
-- **Flutter** — Cross-platform UI framework
-- **Provider** — State management
-- **HTTP/Dio** — API communication
-- **Hive + SharedPreferences** — Local data persistence
-- **flutter_markdown** — Markdown rendering
-- **Google Fonts** — Typography
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## 📄 License
-
-MIT License — feel free to use, modify, and distribute.
-
----
-
-Built with ❤️ using Flutter & Ollama
+Built with ❤️ by the Olly team.

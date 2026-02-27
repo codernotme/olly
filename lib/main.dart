@@ -7,17 +7,31 @@ import 'providers/ollama_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/agent_provider.dart';
+import 'providers/log_provider.dart';
 import 'screens/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-  runApp(const OllamaDesktopApp());
+  final logProvider = LogProvider();
+
+  // Capture print statements
+  FlutterError.onError = (details) {
+    logProvider.addLog('ERROR', details.exceptionAsString());
+    FlutterError.presentError(details);
+  };
+
+  runApp(
+    ChangeNotifierProvider.value(
+      value: logProvider,
+      child: const OllyApp(),
+    ),
+  );
 }
 
-class OllamaDesktopApp extends StatelessWidget {
-  const OllamaDesktopApp({super.key});
+class OllyApp extends StatelessWidget {
+  const OllyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +41,12 @@ class OllamaDesktopApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OllamaProvider()..init()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => AgentProvider()),
+        // ChangeNotifierProvider(create: (_) => LogProvider()), // Already provided above
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return MaterialApp(
-            title: 'Ollama Desktop',
+            title: 'Olly',
             debugShowCheckedModeBanner: false,
             themeMode: settings.themeMode,
             theme: _buildLightTheme(),

@@ -46,11 +46,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Settings',
+                Text('Olly Settings',
                     style: theme.textTheme.headlineMedium
                         ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 4),
-                Text('Configure your Ollama Desktop experience',
+                Text('Configure your Olly experience',
                     style: TextStyle(
                         color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 const SizedBox(height: 32),
@@ -489,13 +489,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+              ),
             ),
             const SizedBox(width: 14),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ollama Desktop',
+                Text('Olly',
                     style:
                         TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 Text('Version 1.0.0',

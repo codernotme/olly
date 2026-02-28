@@ -14,11 +14,15 @@ class AgentTool {
   final String description;
   bool enabled;
 
-  AgentTool({required this.name, required this.description, this.enabled = true});
+  AgentTool(
+      {required this.name, required this.description, this.enabled = true});
 
-  Map<String, dynamic> toJson() => {'name': name, 'description': description, 'enabled': enabled};
-  factory AgentTool.fromJson(Map<String, dynamic> j) =>
-      AgentTool(name: j['name'], description: j['description'], enabled: j['enabled'] ?? true);
+  Map<String, dynamic> toJson() =>
+      {'name': name, 'description': description, 'enabled': enabled};
+  factory AgentTool.fromJson(Map<String, dynamic> j) => AgentTool(
+      name: j['name'],
+      description: j['description'],
+      enabled: j['enabled'] ?? true);
 }
 
 class AgentStep {
@@ -97,7 +101,9 @@ class Agent {
         model: j['model'],
         systemPrompt: j['systemPrompt'],
         status: AgentStatus.values.byName(j['status'] ?? 'idle'),
-        tools: (j['tools'] as List? ?? []).map((t) => AgentTool.fromJson(t)).toList(),
+        tools: (j['tools'] as List? ?? [])
+            .map((t) => AgentTool.fromJson(t))
+            .toList(),
         createdAt: DateTime.parse(j['createdAt']),
         temperature: (j['temperature'] as num?)?.toDouble() ?? 0.7,
         maxSteps: j['maxSteps'] ?? 10,
@@ -129,7 +135,8 @@ class AgentProvider extends ChangeNotifier {
   String? _activeAgentId;
 
   List<Agent> get agents => _agents;
-  Agent? get activeAgent => _agents.where((a) => a.id == _activeAgentId).firstOrNull;
+  Agent? get activeAgent =>
+      _agents.where((a) => a.id == _activeAgentId).firstOrNull;
 
   AgentProvider() {
     _loadAgents();
@@ -143,13 +150,63 @@ class AgentProvider extends ChangeNotifier {
         final list = jsonDecode(data) as List;
         _agents = list.map((a) => Agent.fromJson(a)).toList();
       }
+
+      if (_agents.isEmpty) {
+        _initPrebuiltAgents();
+      }
     } catch (_) {}
     notifyListeners();
   }
 
+  void _initPrebuiltAgents() {
+    final prebuilt = [
+      Agent(
+        name: 'Olly Architect',
+        description:
+            'Expert in software design, patterns, and high-level architecture.',
+        type: AgentType.coder,
+        model: 'llama3:8b', // Default fallback
+        systemPrompt:
+            'You are the Olly Architect. Your goal is to help the user design robust, scalable, and maintainable software systems. Focus on patterns, SOLID principles, and clean architecture.',
+        avatarEmoji: '🏛️',
+      ),
+      Agent(
+        name: 'Olly Creative',
+        description: 'A versatile writer for blogs, emails, and storytelling.',
+        type: AgentType.writer,
+        model: 'llama3:8b',
+        systemPrompt:
+            'You are Olly Creative. You craft compelling, clear, and engaging content for any medium. You have a knack for tone and style adaptation.',
+        avatarEmoji: '✨',
+      ),
+      Agent(
+        name: 'Olly Scholar',
+        description:
+            'Thorough researcher who synthesizes info and cites findings.',
+        type: AgentType.researcher,
+        model: 'llama3:8b',
+        systemPrompt:
+            'You are Olly Scholar. You analyze complex topics, provide deep research summaries, and ensure all information is fact-checked and structured logically.',
+        avatarEmoji: '🎓',
+      ),
+      Agent(
+        name: 'Olly Analyst',
+        description: 'Extracts insights from data and identifies key patterns.',
+        type: AgentType.analyst,
+        model: 'llama3:8b',
+        systemPrompt:
+            'You are Olly Analyst. You excel at breaking down data, identifying trends, and presenting insights in a way that is easy to understand and act upon.',
+        avatarEmoji: '📈',
+      ),
+    ];
+    _agents.addAll(prebuilt);
+    _saveAgents();
+  }
+
   Future<void> _saveAgents() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('agents', jsonEncode(_agents.map((a) => a.toJson()).toList()));
+    await prefs.setString(
+        'agents', jsonEncode(_agents.map((a) => a.toJson()).toList()));
   }
 
   Agent createAgent({
@@ -161,11 +218,16 @@ class AgentProvider extends ChangeNotifier {
     double temperature = 0.7,
   }) {
     final defaultPrompts = {
-      AgentType.assistant: 'You are a helpful AI assistant. Be concise, accurate, and helpful.',
-      AgentType.coder: 'You are an expert software engineer. Write clean, efficient, well-documented code. Always explain your solutions.',
-      AgentType.researcher: 'You are a thorough researcher. Analyze information carefully, cite sources when possible, and provide comprehensive summaries.',
-      AgentType.writer: 'You are a skilled writer. Craft engaging, clear, and well-structured content tailored to the audience.',
-      AgentType.analyst: 'You are a data analyst. Analyze data, identify patterns, and provide actionable insights with clear explanations.',
+      AgentType.assistant:
+          'You are a helpful AI assistant. Be concise, accurate, and helpful.',
+      AgentType.coder:
+          'You are an expert software engineer. Write clean, efficient, well-documented code. Always explain your solutions.',
+      AgentType.researcher:
+          'You are a thorough researcher. Analyze information carefully, cite sources when possible, and provide comprehensive summaries.',
+      AgentType.writer:
+          'You are a skilled writer. Craft engaging, clear, and well-structured content tailored to the audience.',
+      AgentType.analyst:
+          'You are a data analyst. Analyze data, identify patterns, and provide actionable insights with clear explanations.',
       AgentType.custom: 'You are a specialized AI assistant.',
     };
 
@@ -188,14 +250,16 @@ class AgentProvider extends ChangeNotifier {
   List<AgentTool> _defaultToolsForType(AgentType type) {
     return switch (type) {
       AgentType.coder => [
-          AgentTool(name: 'code_execution', description: 'Execute code snippets'),
+          AgentTool(
+              name: 'code_execution', description: 'Execute code snippets'),
           AgentTool(name: 'file_read', description: 'Read file contents'),
           AgentTool(name: 'code_search', description: 'Search through code'),
         ],
       AgentType.researcher => [
           AgentTool(name: 'web_search', description: 'Search the web'),
           AgentTool(name: 'summarize', description: 'Summarize documents'),
-          AgentTool(name: 'extract_info', description: 'Extract key information'),
+          AgentTool(
+              name: 'extract_info', description: 'Extract key information'),
         ],
       AgentType.analyst => [
           AgentTool(name: 'data_analysis', description: 'Analyze datasets'),
@@ -203,7 +267,9 @@ class AgentProvider extends ChangeNotifier {
           AgentTool(name: 'statistics', description: 'Compute statistics'),
         ],
       _ => [
-          AgentTool(name: 'text_processing', description: 'Process and transform text'),
+          AgentTool(
+              name: 'text_processing',
+              description: 'Process and transform text'),
         ],
     };
   }
@@ -220,7 +286,12 @@ class AgentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateAgent(String id, {String? name, String? description, String? systemPrompt, double? temperature, String? model}) {
+  void updateAgent(String id,
+      {String? name,
+      String? description,
+      String? systemPrompt,
+      double? temperature,
+      String? model}) {
     final agent = _agents.where((a) => a.id == id).firstOrNull;
     if (agent != null) {
       if (name != null) agent.name = name;

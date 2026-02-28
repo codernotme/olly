@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'log_provider.dart';
 
 enum OllamaStatus { checking, running, stopped, notInstalled, installing }
 
@@ -72,6 +73,9 @@ class OllamaProvider extends ChangeNotifier {
   Map<String, PullProgress> _pullProgress = {};
   List<String> _runningModels = [];
   Map<String, dynamic> _systemInfo = {};
+  LogProvider? _log;
+
+  void setLogProvider(LogProvider log) => _log = log;
 
   OllamaStatus get status => _status;
   List<OllamaModel> get models {
@@ -340,6 +344,9 @@ class OllamaProvider extends ChangeNotifier {
     String? openaiKey,
     String? anthropicKey,
   }) async* {
+    _log?.addLog(
+        'INFO', 'LLM Request: model=$model, messages=${messages.length}');
+
     if (model.startsWith('gpt-')) {
       yield* _streamOpenAI(
           messages, model, temperature, maxTokens, systemPrompt, openaiKey);
@@ -400,6 +407,8 @@ class OllamaProvider extends ChangeNotifier {
     if (sysPrompt != null)
       allMessages.add({'role': 'system', 'content': sysPrompt});
     allMessages.addAll(messages);
+    _log?.addLog('DEBUG',
+        'OpenAI API Request: model=$model, system=${sysPrompt != null}');
 
     try {
       final req = http.Request(
@@ -445,9 +454,6 @@ class OllamaProvider extends ChangeNotifier {
       return;
     }
 
-    // Convert to Claude format
-    final sys = sysPrompt ?? 'You are a helpful assistant.';
-
     try {
       final req = http.Request(
           'POST', Uri.parse('https://api.anthropic.com/v1/messages'));
@@ -460,10 +466,12 @@ class OllamaProvider extends ChangeNotifier {
         'model': model,
         'max_tokens': maxTokens,
         'temperature': temp,
-        'system': sys,
+        'system': sysPrompt ?? 'You are a helpful assistant.',
         'messages': messages,
         'stream': true
       });
+      _log?.addLog('DEBUG',
+          'Anthropic API Request: model=$model, system=${sysPrompt != null}');
       final res = await req.send();
       await for (final line in res.stream
           .transform(utf8.decoder)

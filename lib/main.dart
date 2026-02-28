@@ -38,10 +38,13 @@ class OllyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()..init()),
-        ChangeNotifierProvider(create: (_) => OllamaProvider()..init()),
+        ChangeNotifierProxyProvider<LogProvider, OllamaProvider>(
+          create: (_) => OllamaProvider()..init(),
+          update: (_, log, ollama) =>
+              (ollama ?? OllamaProvider())..setLogProvider(log),
+        ),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => AgentProvider()),
-        // ChangeNotifierProvider(create: (_) => LogProvider()), // Already provided above
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
